@@ -1,9 +1,40 @@
 use iced::{
-    widget::{button, text::Appearance, text_input},
+    widget::{button, container, text::Appearance, text_input},
     Background, BorderRadius, Color, Vector,
 };
 
 use super::colors;
+
+pub const APP_WINDOW_BORDER_RADIUS: f32 = 6.;
+pub const DEFAULT_BORDER_RADIUS: f32 = 3.;
+
+#[derive(Default, Debug, Clone, Copy)]
+pub enum ContainerStyle {
+    #[default]
+    Default,
+}
+
+impl container::StyleSheet for ContainerStyle {
+    type Style = iced::Theme;
+
+    fn appearance(&self, style: &Self::Style) -> container::Appearance {
+        container::Appearance {
+            background: Some(Background::Color(Color {
+                r: 0.,
+                g: 0.,
+                b: 0.,
+                a: 0.55,
+            })),
+            border_radius: BorderRadius::from(APP_WINDOW_BORDER_RADIUS),
+            border_width: 0.0,
+            ..container::Appearance::default()
+        }
+    }
+}
+
+pub fn get_item_container_style() -> iced::theme::Container {
+    iced::theme::Container::Custom(Box::new(ContainerStyle::Default))
+}
 
 pub enum ButtonPosition {
     Default,
@@ -16,8 +47,6 @@ pub enum Button {
     Focused(ButtonPosition),
     Secondary,
 }
-
-pub const DEFAULT_BORDER_RADIUS: f32 = 6.;
 
 impl button::StyleSheet for Button {
     type Style = iced::Theme;

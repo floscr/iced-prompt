@@ -68,12 +68,7 @@ impl iced::application::StyleSheet for ApplicationStyle {
 
     fn appearance(&self, _style: &Self::Style) -> iced::application::Appearance {
         iced::application::Appearance {
-            background_color: iced::Color {
-                r: 0.,
-                g: 0.,
-                b: 0.,
-                a: 0.6,
-            },
+            background_color: iced::Color::TRANSPARENT,
             text_color: iced::Color::WHITE,
         }
     }
@@ -162,7 +157,7 @@ impl Application for Commands {
     }
 
     fn view(&self) -> Element<Message> {
-        use crate::gui::style::{Button, ButtonPosition, TextInput};
+        use crate::gui::style::{get_item_container_style, Button, ButtonPosition, TextInput};
 
         let default_state = State::default();
         let state = match self {
@@ -184,7 +179,6 @@ impl Application for Commands {
         let filtered_items: Vec<String> = filter_matches(commands, input_value);
 
         let tasks: Option<Element<_>> = if !filtered_items.is_empty() {
-
             let filtered_items_len = filtered_items.len();
 
             let elements = keyed_column(filtered_items.iter().enumerate().map(|(i, item)| {
@@ -237,7 +231,10 @@ impl Application for Commands {
                 .into(),
         };
 
-        column![input, content].into()
+        container(column![input, content])
+            .height(Length::Fill)
+            .style(get_item_container_style())
+            .into()
     }
 
     fn subscription(&self) -> Subscription<Message> {
