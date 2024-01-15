@@ -5,8 +5,8 @@ use iced::{
 
 use super::colors;
 
-pub const APP_WINDOW_BORDER_RADIUS: f32 = 6.;
-pub const DEFAULT_BORDER_RADIUS: f32 = 3.;
+pub const APP_WINDOW_BORDER_RADIUS: f32 = 10.;
+pub const DEFAULT_BORDER_RADIUS: f32 = 5.;
 
 #[derive(Default, Debug, Clone, Copy)]
 pub enum ContainerStyle {

@@ -173,8 +173,8 @@ impl Application for Commands {
             .style(TextInput::Default)
             .on_submit(Message::Submit)
             .on_input(Message::InputChanged)
-            .padding(15)
-            .size(30);
+            .padding(Padding::from([15., DEFAULT_BORDER_RADIUS + 10.]))
+            .size(15.);
 
         let filtered_items: Vec<String> = filter_matches(commands, input_value);
 
@@ -199,8 +199,8 @@ impl Application for Commands {
                 (
                     i,
                     button(
-                        container(text(item).line_height(3.))
-                            .padding(Padding::from([0., DEFAULT_BORDER_RADIUS + 5.])),
+                        container(text(item).line_height(1.25))
+                            .padding(Padding::from([5., DEFAULT_BORDER_RADIUS + 5.])),
                     )
                     .style(button_style)
                     .width(Length::Fill)
@@ -217,7 +217,7 @@ impl Application for Commands {
 
         let content: Element<_> = match tasks {
             Some(el) => scrollable(container(el).padding(iced::Padding::from([
-                10.,
+                5.,
                 10. + crate::gui::style::DEFAULT_BORDER_RADIUS,
                 10.,
                 10.,
