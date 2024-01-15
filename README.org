@@ -2,7 +2,9 @@
 
 An attempt at building an interactive system prompt for launching applications, workflows etc.
 
-[[file:github/demo-01.mp4][demo]]
+[[./github/demo-01.mp4][demo]]
+
+
 
 ** Inspiration
 
