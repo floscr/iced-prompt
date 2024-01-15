@@ -1,0 +1,11 @@
+#+title: Iced Prompt
+
+An attempt at building an interactive system prompt for launching applications, workflows etc.
+
+[[file:github/demo-01.mp4][demo]]
+
+** Inspiration
+
+- [[https://github.com/davatorium/rofi][davatorium/rofi: Rofi: A window switcher, application launcher and dmenu replacement]]
+- [[https://github.com/oknozor/onagre][GitHub - oknozor/onagre: A general purpose application launcher for X and wayland inspired by rofi/wofi and alfred]]
+- [[https://www.raycast.com/][Raycast]]
