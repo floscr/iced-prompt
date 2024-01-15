@@ -97,7 +97,7 @@ impl Application for Commands {
     }
 
     fn title(&self) -> String {
-        "Todos - Iced".to_string()
+        "Iced Query".to_string()
     }
 
     fn update(&mut self, message: Message) -> Command<Message> {
