@@ -162,6 +162,8 @@ impl Application for Commands {
     }
 
     fn view(&self) -> Element<Message> {
+        use crate::gui::style::{Button, ButtonPosition, TextInput};
+
         let default_state = State::default();
         let state = match self {
             Commands::Loading => &default_state,
@@ -173,6 +175,7 @@ impl Application for Commands {
 
         let input = text_input("Your prompt", input_value)
             .id(INPUT_ID.clone())
+            .style(TextInput::Default)
             .on_submit(Message::Submit)
             .on_input(Message::InputChanged)
             .padding(15)
@@ -181,7 +184,6 @@ impl Application for Commands {
         let filtered_items: Vec<String> = filter_matches(commands, input_value);
 
         let tasks: Option<Element<_>> = if !filtered_items.is_empty() {
-            use crate::gui::style::{Button, ButtonPosition};
 
             let filtered_items_len = filtered_items.len();
 

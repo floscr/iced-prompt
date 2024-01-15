@@ -1,4 +1,7 @@
-use iced::{widget::button, Background, BorderRadius, Color, Vector};
+use iced::{
+    widget::{button, text::Appearance, text_input},
+    Background, BorderRadius, Color, Vector,
+};
 
 use super::colors;
 
@@ -45,5 +48,60 @@ impl button::StyleSheet for Button {
 impl From<Button> for iced::theme::Button {
     fn from(style: Button) -> Self {
         iced::theme::Button::Custom(Box::new(style))
+    }
+}
+
+#[derive(Default, Debug, Clone, Copy)]
+pub enum TextInput {
+    #[default]
+    Default,
+}
+
+impl text_input::StyleSheet for TextInput {
+    type Style = iced::Theme;
+
+    fn active(&self, _style: &Self::Style) -> text_input::Appearance {
+        text_input::Appearance {
+            background: Background::Color(colors::BUTTON_BG_TRANSPARENT),
+            border_width: 0.0,
+            border_radius: 0.0.into(),
+            border_color: Color::TRANSPARENT,
+            icon_color: Color::TRANSPARENT,
+        }
+    }
+
+    fn focused(&self, style: &Self::Style) -> text_input::Appearance {
+        text_input::Appearance {
+            background: Background::Color(colors::BUTTON_BG_TRANSPARENT),
+            border_width: 0.0,
+            ..self.active(style)
+        }
+    }
+
+    // Implement the missing trait items with default values
+    fn placeholder_color(&self, _style: &Self::Style) -> Color {
+        Default::default()
+    }
+
+    fn value_color(&self, _style: &Self::Style) -> Color {
+        Color::WHITE
+    }
+
+    fn disabled_color(&self, _style: &Self::Style) -> Color {
+        Default::default()
+    }
+
+    fn selection_color(&self, _style: &Self::Style) -> Color {
+        Color::WHITE
+    }
+
+    fn disabled(&self, style: &Self::Style) -> text_input::Appearance {
+        self.active(style)
+    }
+}
+
+impl From<TextInput> for iced::theme::TextInput {
+    fn from(style: TextInput) -> Self {
+        iced::theme::TextInput::Custom(Box::new(style))
     }
 }
