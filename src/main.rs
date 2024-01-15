@@ -62,8 +62,8 @@ enum Message {
     Submit,
 }
 
-struct SandboxStyle {}
-impl iced::application::StyleSheet for SandboxStyle {
+struct ApplicationStyle {}
+impl iced::application::StyleSheet for ApplicationStyle {
     type Style = iced::Theme;
 
     fn appearance(&self, _style: &Self::Style) -> iced::application::Appearance {
@@ -256,7 +256,7 @@ impl Application for Commands {
     }
 
     fn style(&self) -> iced::theme::Application {
-        iced::theme::Application::Custom(Box::new(SandboxStyle {}))
+        iced::theme::Application::Custom(Box::new(ApplicationStyle {}))
     }
 }
 
