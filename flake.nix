@@ -72,6 +72,10 @@
               LD_LIBRARY_PATH =
                 builtins.foldl' (a: b: "${a}:${b}/lib") "${pkgs.vulkan-loader}/lib" deps;
 
+              shellHook = ''
+                alias iced_prompt=./target/release/iced_prompt
+              '';
+
               nativeBuildInputs = with pkgs; [
                 pkg-config
               ];
