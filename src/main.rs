@@ -12,6 +12,7 @@ use once_cell::sync::Lazy;
 mod core;
 mod gui;
 
+use core::cmd;
 use gui::style::DEFAULT_BORDER_RADIUS;
 
 static INPUT_ID: Lazy<text_input::Id> = Lazy::new(text_input::Id::unique);
@@ -48,7 +49,7 @@ enum Commands {
 #[derive(Debug, Default)]
 struct State {
     input_value: String,
-    commands: Vec<String>,
+    cmds: Vec<cmd::Cmd>,
     selection: CommandSelection,
 }
 
@@ -103,7 +104,7 @@ impl Application for Commands {
                     Message::IoLoaded(result) => {
                         *self = match result {
                             Some(data) => Commands::Loaded(State {
-                                commands: data.value.split('\n').map(String::from).collect(),
+                                cmds: data.value.split('\n').map(|x| cmd::Cmd::new(x.to_string())).collect(),
                                 ..State::default()
                             }),
                             None => Commands::Loaded(State::default()),
@@ -138,12 +139,13 @@ impl Application for Commands {
                         CommandSelection::Initial => 0,
                         CommandSelection::Selected(n) => n as usize,
                     };
-                    let filtered_items: Vec<String> =
-                        filter_matches(&state.commands, &state.input_value);
+                    let filtered_items: Vec<cmd::Cmd> =
+                        filter_matches(&state.cmds, &state.input_value);
 
                     match filtered_items.get(selection_index) {
-                        Some(x) => {
-                            println!("{}", x);
+                        Some(cmd) => {
+                            let value = cmd::Cmd::value(cmd);
+                            println!("{}", value);
                             std::process::exit(0)
                         }
                         _ => std::process::exit(1),
@@ -165,7 +167,7 @@ impl Application for Commands {
             Commands::Loaded(state) => state,
         };
         let input_value = &state.input_value;
-        let commands = &state.commands;
+        let cmds = &state.cmds;
         let selection = &state.selection;
 
         let input = text_input("Your prompt", input_value)
@@ -176,12 +178,15 @@ impl Application for Commands {
             .padding(Padding::from([15., DEFAULT_BORDER_RADIUS + 10.]))
             .size(15.);
 
-        let filtered_items: Vec<String> = filter_matches(commands, input_value);
+        let filtered_cmds: Vec<cmd::Cmd> = filter_matches(cmds, input_value);
 
-        let tasks: Option<Element<_>> = if !filtered_items.is_empty() {
-            let filtered_items_len = filtered_items.len();
+        let cmds: Option<Element<_>> = if !filtered_cmds.is_empty() {
+            let filtered_items_len = filtered_cmds.len();
 
-            let elements = keyed_column(filtered_items.iter().enumerate().map(|(i, item)| {
+
+            let elements = keyed_column(
+                filtered_cmds.iter().enumerate().map(|(i, cmd)| {
+                    let value = cmd::Cmd::value(cmd);
                 let button_position = match i {
                     0 => ButtonPosition::Top,
                     _ if i == filtered_items_len - 1 => ButtonPosition::Bottom,
@@ -195,18 +200,18 @@ impl Application for Commands {
                     }
                     _ => Button::Primary(button_position),
                 };
-
                 (
                     i,
                     button(
-                        container(text(item).line_height(1.25))
+                        container(text(value).line_height(1.25))
                             .padding(Padding::from([5., DEFAULT_BORDER_RADIUS + 5.])),
                     )
                     .style(button_style)
                     .width(Length::Fill)
                     .into(),
                 )
-            }))
+            }
+                ))
             .spacing(1)
             .into();
 
@@ -215,7 +220,7 @@ impl Application for Commands {
             None
         };
 
-        let content: Element<_> = match tasks {
+        let content: Element<_> = match cmds {
             Some(el) => scrollable(container(el).padding(iced::Padding::from([
                 5.,
                 10. + crate::gui::style::DEFAULT_BORDER_RADIUS,
@@ -283,10 +288,15 @@ impl PromptData {
     }
 }
 
-fn filter_matches(items: &[String], substring: &str) -> Vec<String> {
+fn filter_matches(items: &[cmd::Cmd], substring: &str) -> Vec<cmd::Cmd> {
     items
         .iter()
-        .filter(|item| item.to_lowercase().contains(&substring.to_lowercase()))
+        .filter_map(|cmd| {
+                let value = cmd::Cmd::value(cmd);
+                let is_match = value.to_lowercase().contains(&substring.to_lowercase());
+
+                if is_match { Some(cmd) } else { None }
+        })
         .cloned()
         .collect()
 }
