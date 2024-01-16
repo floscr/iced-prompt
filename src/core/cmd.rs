@@ -1,5 +1,7 @@
 use uuid::Uuid;
 
+pub const SIMPLE_CMD_HEIGHT: f32 = 28.;
+
 #[derive(Debug, Clone)]
 pub enum Cmd {
     Simple(Base),

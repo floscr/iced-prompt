@@ -205,7 +205,9 @@ impl Application for Commands {
                     i,
                     button(
                         container(text(value).line_height(1.25))
-                            .padding(Padding::from([5., DEFAULT_BORDER_RADIUS + 5.])),
+                            .height(cmd::SIMPLE_CMD_HEIGHT)
+                            .center_y()
+
                     )
                     .style(button_style)
                     .width(Length::Fill)
