@@ -15,6 +15,7 @@ mod gui;
 use core::cmd;
 use gui::style::DEFAULT_BORDER_RADIUS;
 
+static SCROLLABLE_ID: Lazy<scrollable::Id> = Lazy::new(scrollable::Id::unique);
 static INPUT_ID: Lazy<text_input::Id> = Lazy::new(text_input::Id::unique);
 
 pub fn main() -> iced::Result {
@@ -227,7 +228,8 @@ impl Application for Commands {
                 10.,
                 10.,
             ])))
-            .into(),
+                .id(SCROLLABLE_ID.clone())
+                .into(),
             _ => container(text("Nothing found"))
                 .width(Length::Fill)
                 .height(Length::Fill)
