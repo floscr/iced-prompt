@@ -1,5 +1,5 @@
 use iced::{
-    widget::{button, container, text::Appearance, text_input},
+    widget::{button, container, text_input},
     Background, BorderRadius, Color, Vector,
 };
 
@@ -17,7 +17,7 @@ pub enum ContainerStyle {
 impl container::StyleSheet for ContainerStyle {
     type Style = iced::Theme;
 
-    fn appearance(&self, style: &Self::Style) -> container::Appearance {
+    fn appearance(&self, _style: &Self::Style) -> container::Appearance {
         container::Appearance {
             background: Some(Background::Color(Color {
                 r: 0.,

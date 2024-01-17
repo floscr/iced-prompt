@@ -1,4 +1,4 @@
-use std::cmp;
+use num;
 
 use iced::theme::Theme;
 use iced::widget::{button, column, container, keyed_column, scrollable, text, text_input};
@@ -8,11 +8,13 @@ use iced::{Application, Element};
 use iced::{Command, Length, Settings, Size, Subscription};
 
 use once_cell::sync::Lazy;
+use uuid::Uuid;
 
 mod core;
 mod gui;
 
 use core::cmd;
+use core::cmd::{Cmd, Cmds, FilteredCmds};
 use gui::style::DEFAULT_BORDER_RADIUS;
 
 static SCROLLABLE_ID: Lazy<scrollable::Id> = Lazy::new(scrollable::Id::unique);
@@ -38,7 +40,7 @@ pub fn main() -> iced::Result {
 enum CommandSelection {
     #[default]
     Initial,
-    Selected(i32),
+    Selected(Uuid),
 }
 
 #[derive(Debug)]
@@ -50,7 +52,8 @@ enum Commands {
 #[derive(Debug, Default)]
 struct State {
     input_value: String,
-    cmds: Vec<cmd::Cmd>,
+    cmds: Cmds,
+    filtered_cmds: Option<FilteredCmds>,
     selection: CommandSelection,
 }
 
@@ -105,7 +108,7 @@ impl Application for Commands {
                     Message::IoLoaded(result) => {
                         *self = match result {
                             Some(data) => Commands::Loaded(State {
-                                cmds: data.value.split('\n').map(|x| cmd::Cmd::new(x.to_string())).collect(),
+                                cmds: Cmds::from_string(data.value),
                                 ..State::default()
                             }),
                             None => Commands::Loaded(State::default()),
@@ -118,32 +121,41 @@ impl Application for Commands {
             }
             Commands::Loaded(state) => match message {
                 Message::InputChanged(value) => {
+                    state.filtered_cmds = Some(state.cmds.filter_by_value(&value));
                     state.input_value = value;
                     state.selection = CommandSelection::Initial;
 
                     Command::none()
                 }
                 Message::Select(amount) => {
-                    let selection_index: i32 = match state.selection {
-                        CommandSelection::Initial => 0,
-                        CommandSelection::Selected(n) => n,
+                    let cmds = match &state.filtered_cmds {
+                        Some(filtered_cmds) => state.cmds.clone().with_filtered_order(filtered_cmds),
+                        None => state.cmds.clone(),
                     };
 
-                    let next_index: i32 = cmp::max(0, selection_index + amount);
+                    let selection_index = match state.selection {
+                        CommandSelection::Initial => 0,
+                        CommandSelection::Selected(selected_id) => cmds.order.iter().position(|&id| id == selected_id).unwrap()
+                    };
 
-                    state.selection = CommandSelection::Selected(next_index);
+                    let next_index: usize = num::clamp(selection_index as i32 + amount, 0, cmds.order.len() as i32) as usize;
+
+                    let selection = match cmds.get_by_index(next_index) {
+                        Some(cmd) => CommandSelection::Selected(Cmd::uuid(&cmd).clone()),
+                        None => CommandSelection::Initial,
+                    };
+
+                    state.selection = selection;
 
                     Command::none()
                 }
                 Message::Submit => {
-                    let selection_index: usize = match state.selection {
-                        CommandSelection::Initial => 0,
-                        CommandSelection::Selected(n) => n as usize,
+                    let id = match state.selection {
+                        CommandSelection::Initial => Some(state.cmds.order[0]),
+                        CommandSelection::Selected(selected_id) => Some(selected_id),
                     };
-                    let filtered_items: Vec<cmd::Cmd> =
-                        filter_matches(&state.cmds, &state.input_value);
 
-                    match filtered_items.get(selection_index) {
+                    match id.and_then(|id| state.cmds.cmds.get(&id)) {
                         Some(cmd) => {
                             let value = cmd::Cmd::value(cmd);
                             println!("{}", value);
@@ -168,7 +180,12 @@ impl Application for Commands {
             Commands::Loaded(state) => state,
         };
         let input_value = &state.input_value;
-        let cmds = &state.cmds;
+
+        let cmds = match &state.filtered_cmds {
+            Some(filtered_cmds) => state.cmds.clone().with_filtered_order(filtered_cmds),
+            None => state.cmds.clone(),
+        };
+
         let selection = &state.selection;
 
         let input = text_input("Your prompt", input_value)
@@ -179,49 +196,39 @@ impl Application for Commands {
             .padding(Padding::from([15., DEFAULT_BORDER_RADIUS + 10.]))
             .size(15.);
 
-        let filtered_cmds: Vec<cmd::Cmd> = filter_matches(cmds, input_value);
+        let filtered_items_len = cmds.order.len();
 
-        let cmds: Option<Element<_>> = if !filtered_cmds.is_empty() {
-            let filtered_items_len = filtered_cmds.len();
+        let items = cmds.map(|i, id, cmd| {
+            let value = cmd::Cmd::value(cmd).clone();
+            let button_position = match i {
+                0 => ButtonPosition::Top,
+                _ if i == filtered_items_len - 1 => ButtonPosition::Bottom,
+                _ => ButtonPosition::Default,
+            };
 
+            let button_style = match (selection, i) {
+                (CommandSelection::Initial, 0) => Button::Focused(button_position),
+                (CommandSelection::Selected(selected_id), _) if selected_id == id => {
+                    Button::Focused(button_position)
+                }
+                _ => Button::Primary(button_position),
+            };
 
-            let elements = keyed_column(
-                filtered_cmds.iter().enumerate().map(|(i, cmd)| {
-                    let value = cmd::Cmd::value(cmd);
-                let button_position = match i {
-                    0 => ButtonPosition::Top,
-                    _ if i == filtered_items_len - 1 => ButtonPosition::Bottom,
-                    _ => ButtonPosition::Default,
-                };
-
-                let button_style = match (selection, i) {
-                    (CommandSelection::Initial, 0) => Button::Focused(button_position),
-                    (CommandSelection::Selected(x), y) if *x == y as i32 => {
-                        Button::Focused(button_position)
-                    }
-                    _ => Button::Primary(button_position),
-                };
-                (
-                    i,
-                    button(
-                        container(text(value).line_height(1.25))
-                            .height(cmd::SIMPLE_CMD_HEIGHT)
-                            .center_y()
-
-                    )
-                    .style(button_style)
-                    .width(Length::Fill)
-                    .into(),
+            (
+                #[allow(clippy::clone_on_copy)]
+                id.clone(),
+                button(
+                    container(text(value).line_height(1.25))
+                        .height(cmd::SIMPLE_CMD_HEIGHT)
+                        .center_y(),
                 )
-            }
-                ))
-            .spacing(1)
-            .into();
+                .style(button_style)
+                .width(Length::Fill)
+                .into(),
+            )
+        });
 
-            Some(elements)
-        } else {
-            None
-        };
+        let cmds = keyed_column(items).spacing(1).into();
 
         let content: Element<_> = match cmds {
             Some(el) => scrollable(container(el).padding(iced::Padding::from([
@@ -230,8 +237,8 @@ impl Application for Commands {
                 10.,
                 10.,
             ])))
-                .id(SCROLLABLE_ID.clone())
-                .into(),
+            .id(SCROLLABLE_ID.clone())
+            .into(),
             _ => container(text("Nothing found"))
                 .width(Length::Fill)
                 .height(Length::Fill)
@@ -296,10 +303,14 @@ fn filter_matches(items: &[cmd::Cmd], substring: &str) -> Vec<cmd::Cmd> {
     items
         .iter()
         .filter_map(|cmd| {
-                let value = cmd::Cmd::value(cmd);
-                let is_match = value.to_lowercase().contains(&substring.to_lowercase());
+            let value = cmd::Cmd::value(cmd);
+            let is_match = value.to_lowercase().contains(&substring.to_lowercase());
 
-                if is_match { Some(cmd) } else { None }
+            if is_match {
+                Some(cmd)
+            } else {
+                None
+            }
         })
         .cloned()
         .collect()
