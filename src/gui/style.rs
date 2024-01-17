@@ -26,7 +26,13 @@ impl container::StyleSheet for ContainerStyle {
                 a: 0.55,
             })),
             border_radius: BorderRadius::from(APP_WINDOW_BORDER_RADIUS),
-            border_width: 0.0,
+            border_width: 1.0,
+            border_color: Color {
+                r: 0.25,
+                g: 0.25,
+                b: 0.25,
+                a: 0.1,
+            },
             ..container::Appearance::default()
         }
     }
