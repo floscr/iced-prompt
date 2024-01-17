@@ -13,8 +13,8 @@ use uuid::Uuid;
 mod core;
 mod gui;
 
-use core::cmd;
-use core::cmd::{Cmd, Cmds, FilteredCmds};
+use core::cmds;
+use core::cmds::{Cmd, Cmds, FilteredCmds};
 use gui::style::DEFAULT_BORDER_RADIUS;
 
 static SCROLLABLE_ID: Lazy<scrollable::Id> = Lazy::new(scrollable::Id::unique);
@@ -157,7 +157,7 @@ impl Application for Commands {
 
                     match id.and_then(|id| state.cmds.cmds.get(&id)) {
                         Some(cmd) => {
-                            let value = cmd::Cmd::value(cmd);
+                            let value = cmds::Cmd::value(cmd);
                             println!("{}", value);
                             std::process::exit(0)
                         }
@@ -199,7 +199,7 @@ impl Application for Commands {
         let filtered_items_len = cmds.order.len();
 
         let items = cmds.map(|i, id, cmd| {
-            let value = cmd::Cmd::value(cmd).clone();
+            let value = cmds::Cmd::value(cmd).clone();
             let button_position = match i {
                 0 => ButtonPosition::Top,
                 _ if i == filtered_items_len - 1 => ButtonPosition::Bottom,
@@ -219,7 +219,7 @@ impl Application for Commands {
                 id.clone(),
                 button(
                     container(text(value).line_height(1.25))
-                        .height(cmd::SIMPLE_CMD_HEIGHT)
+                        .height(cmds::SIMPLE_CMD_HEIGHT)
                         .center_y(),
                 )
                 .style(button_style)
@@ -299,11 +299,11 @@ impl PromptData {
     }
 }
 
-fn filter_matches(items: &[cmd::Cmd], substring: &str) -> Vec<cmd::Cmd> {
+fn filter_matches(items: &[cmds::Cmd], substring: &str) -> Vec<cmds::Cmd> {
     items
         .iter()
         .filter_map(|cmd| {
-            let value = cmd::Cmd::value(cmd);
+            let value = cmds::Cmd::value(cmd);
             let is_match = value.to_lowercase().contains(&substring.to_lowercase());
 
             if is_match {

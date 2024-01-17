@@ -1,2 +1,2 @@
-pub mod cmd;
+pub mod cmds;
 pub mod theme;
