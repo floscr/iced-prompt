@@ -1,4 +1,4 @@
-use num;
+
 
 use iced::theme::Theme;
 use iced::widget::{button, column, container, keyed_column, scrollable, text, text_input};
@@ -141,7 +141,7 @@ impl Application for Commands {
                     let next_index: usize = num::clamp(selection_index as i32 + amount, 0, cmds.order.len() as i32) as usize;
 
                     let selection = match cmds.get_by_index(next_index) {
-                        Some(cmd) => CommandSelection::Selected(Cmd::uuid(&cmd).clone()),
+                        Some(cmd) => CommandSelection::Selected(*Cmd::uuid(&cmd)),
                         None => CommandSelection::Initial,
                     };
 
@@ -215,8 +215,7 @@ impl Application for Commands {
             };
 
             (
-                #[allow(clippy::clone_on_copy)]
-                id.clone(),
+                *id,
                 button(
                     container(text(value).line_height(1.25))
                         .height(cmds::SIMPLE_CMD_HEIGHT)
