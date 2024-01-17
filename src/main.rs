@@ -154,6 +154,8 @@ impl Application for Commands {
 
                     let total_cmds = (cmds.order.len() - 1) as f32;
 
+                    let scroll_offset = cmds.scroll_offset_at_index(next_index) - state.scrollable_offset.y;
+
                     state.selection = selection;
 
                     match selected_cmd {
@@ -161,7 +163,7 @@ impl Application for Commands {
                         Some(_) => {
                             let offset = (1.0 / (total_cmds)) * selection_index as f32;
                             println!("{offset}");
-                            scrollable::snap_to(SCROLLABLE_ID.clone(), RelativeOffset { x: 0.0, y: offset })
+                            scrollable::scroll_to(SCROLLABLE_ID.clone(), AbsoluteOffset { x: 0.0, y: scroll_offset })
                         }
                     }
                 }

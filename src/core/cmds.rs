@@ -33,6 +33,12 @@ impl Cmd {
             Cmd::Simple(base) => &base.id,
         }
     }
+
+    pub fn height(cmd: &Cmd) -> f32 {
+        match cmd {
+            Cmd::Simple(_) => SIMPLE_CMD_HEIGHT + 1.,
+        }
+    }
 }
 
 #[derive(Debug, Default, Clone)]
@@ -74,6 +80,15 @@ impl Cmds {
             .enumerate()
             .filter_map(|(index, id)| self.cmds.get(id).map(|cmd| f(index, id, cmd)))
             .collect()
+    }
+
+    pub fn scroll_offset_at_index(self, index: usize) -> f32 {
+        let ids = &self.order[..index];
+        let mut offset = 0.;
+        for id in ids {
+            offset += Cmd::height(&self.cmds[id])
+        }
+        offset
     }
 
     pub fn with_filtered_order(self, filtered_cmds: &FilteredCmds) -> Cmds {
