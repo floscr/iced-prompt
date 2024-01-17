@@ -1,5 +1,5 @@
 use iced::{
-    widget::{button, container, text_input},
+    widget::{button, container, rule, text_input},
     Background, BorderRadius, Color, Vector,
 };
 
@@ -138,5 +138,35 @@ impl text_input::StyleSheet for TextInput {
 impl From<TextInput> for iced::theme::TextInput {
     fn from(style: TextInput) -> Self {
         iced::theme::TextInput::Custom(Box::new(style))
+    }
+}
+
+#[derive(Default, Debug, Clone, Copy)]
+pub enum Rule {
+    #[default]
+    Default,
+}
+
+impl rule::StyleSheet for Rule {
+    type Style = iced::Theme;
+
+    fn appearance(&self, _style: &Self::Style) -> rule::Appearance {
+        rule::Appearance {
+            color: Color {
+                r: 1.,
+                g: 1.,
+                b: 1.,
+                a: 0.05,
+            },
+            width: 1,
+            radius: 0.0.into(),
+            fill_mode: rule::FillMode::Full,
+        }
+    }
+}
+
+impl From<Rule> for iced::theme::Rule {
+    fn from(style: Rule) -> Self {
+        iced::theme::Rule::Custom(Box::new(style))
     }
 }

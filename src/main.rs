@@ -1,8 +1,11 @@
 use iced::theme::Theme;
-use iced::widget::{button, column, container, keyed_column, scrollable, text, text_input};
 use iced::widget::scrollable::{AbsoluteOffset, RelativeOffset, Viewport};
+use iced::widget::{
+    button, column, container, horizontal_rule, keyed_column, row, scrollable, text, text_input,
+    vertical_space,
+};
 use iced::window::{self, Level};
-use iced::{keyboard, Padding};
+use iced::{keyboard, Alignment, Padding};
 use iced::{Application, Element};
 use iced::{Command, Length, Settings, Size, Subscription};
 
@@ -65,7 +68,7 @@ enum Message {
     Exit,
     Select(i32),
     Submit,
-    OnScroll(Viewport)
+    OnScroll(Viewport),
 }
 
 struct ApplicationStyle {}
@@ -134,16 +137,22 @@ impl Application for Commands {
                 }
                 Message::Select(amount) => {
                     let cmds = match &state.filtered_cmds {
-                        Some(filtered_cmds) => state.cmds.clone().with_filtered_order(filtered_cmds),
+                        Some(filtered_cmds) => {
+                            state.cmds.clone().with_filtered_order(filtered_cmds)
+                        }
                         None => state.cmds.clone(),
                     };
 
                     let selection_index = match state.selection {
                         CommandSelection::Initial => 0,
-                        CommandSelection::Selected(selected_id) => cmds.order.iter().position(|&id| id == selected_id).unwrap()
+                        CommandSelection::Selected(selected_id) => {
+                            cmds.order.iter().position(|&id| id == selected_id).unwrap()
+                        }
                     };
 
-                    let next_index: usize = num::clamp(selection_index as i32 + amount, 0, cmds.order.len() as i32) as usize;
+                    let next_index: usize =
+                        num::clamp(selection_index as i32 + amount, 0, cmds.order.len() as i32)
+                            as usize;
 
                     let selected_cmd = cmds.get_by_index(next_index);
 
@@ -157,8 +166,15 @@ impl Application for Commands {
                     match selected_cmd {
                         None => scrollable::snap_to(SCROLLABLE_ID.clone(), RelativeOffset::START),
                         Some(_) => {
-                            let scroll_offset = cmds.scroll_offset_at_index(next_index) - state.scrollable_offset.y;
-                            scrollable::scroll_to(SCROLLABLE_ID.clone(), AbsoluteOffset { x: 0.0, y: scroll_offset })
+                            let scroll_offset =
+                                cmds.scroll_offset_at_index(next_index) - state.scrollable_offset.y;
+                            scrollable::scroll_to(
+                                SCROLLABLE_ID.clone(),
+                                AbsoluteOffset {
+                                    x: 0.0,
+                                    y: scroll_offset,
+                                },
+                            )
                         }
                     }
                 }
@@ -185,7 +201,7 @@ impl Application for Commands {
     }
 
     fn view(&self) -> Element<Message> {
-        use crate::gui::style::{get_item_container_style, Button, ButtonPosition, TextInput};
+        use crate::gui::style::{get_item_container_style, Button, ButtonPosition, TextInput, Rule};
 
         let default_state = State::default();
         let state = match self {
@@ -200,14 +216,6 @@ impl Application for Commands {
         };
 
         let selection = &state.selection;
-
-        let input = text_input("Your prompt", input_value)
-            .id(INPUT_ID.clone())
-            .style(TextInput::Default)
-            .on_submit(Message::Submit)
-            .on_input(Message::InputChanged)
-            .padding(Padding::from([15., DEFAULT_BORDER_RADIUS + 10.]))
-            .size(15.);
 
         let filtered_items_len = cmds.order.len();
 
@@ -240,16 +248,27 @@ impl Application for Commands {
             )
         });
 
-        let cmds = keyed_column(items).spacing(1).into();
+        let cmds = keyed_column(items)
+            .spacing(1)
+            .padding(iced::Padding::from([
+                0.,
+                10. + crate::gui::style::DEFAULT_BORDER_RADIUS + 10.,
+                0.,
+                10.,
+            ]))
+            .into();
 
         let content: Element<_> = match cmds {
-            Some(el) => scrollable(container(el).padding(iced::Padding::from([
-                0.,
-                10. + crate::gui::style::DEFAULT_BORDER_RADIUS,
-                0.,
-                0.,
-            ])))
+            Some(el) => scrollable(row![el])
                 .on_scroll(Message::OnScroll)
+                .height(Length::Fill)
+                .direction(scrollable::Direction::Vertical(
+                    scrollable::Properties::new()
+                        .width(10)
+                        .margin(8)
+                        .scroller_width(8)
+                        .alignment(scrollable::Alignment::Start),
+                ))
                 .id(SCROLLABLE_ID.clone())
                 .into(),
             _ => container(text("Nothing found"))
@@ -260,10 +279,43 @@ impl Application for Commands {
                 .into(),
         };
 
-        container(column![input, container(content).padding(10)])
+        let input = column![
+            text_input("Your prompt", input_value)
+                .id(INPUT_ID.clone())
+                .style(TextInput::Default)
+                .on_submit(Message::Submit)
+                .on_input(Message::InputChanged)
+                .padding(Padding::from([15., DEFAULT_BORDER_RADIUS + 10.]))
+                .size(15.),
+            horizontal_rule(1).style(Rule::Default),
+        ];
+
+        let footer: Element<_> = column![
+            horizontal_rule(1).style(Rule::Default),
+            container(text("Footer"))
+                .center_y()
+                .height(Length::Fill)
+                .padding(iced::Padding::from([0, 10])),
+        ]
+        .height(30)
+        .into();
+
+        let wrapper: Element<Message> = column![row![input], content, row![footer]]
+            .spacing(10)
+            .width(Length::Fill)
             .height(Length::Fill)
-            .style(get_item_container_style())
-            .into()
+            .align_items(Alignment::Center)
+            .into();
+
+        Element::from(
+            container(wrapper)
+                .width(Length::Fill)
+                .height(Length::Fill)
+                .center_x()
+                .padding(1)
+                .style(get_item_container_style())
+                .center_y(),
+        )
     }
 
     fn subscription(&self) -> Subscription<Message> {
