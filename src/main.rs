@@ -130,7 +130,7 @@ impl Application for Commands {
                     state.input_value = value;
                     state.selection = CommandSelection::Initial;
 
-                    Command::none()
+                    scrollable::snap_to(SCROLLABLE_ID.clone(), RelativeOffset::START)
                 }
                 Message::Select(amount) => {
                     let cmds = match &state.filtered_cmds {
