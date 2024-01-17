@@ -1,6 +1,7 @@
 
 
 use iced::theme::Theme;
+use iced::widget::scrollable::RelativeOffset;
 use iced::widget::{button, column, container, keyed_column, scrollable, text, text_input};
 use iced::window::{self, Level};
 use iced::{keyboard, Padding};
@@ -140,14 +141,25 @@ impl Application for Commands {
 
                     let next_index: usize = num::clamp(selection_index as i32 + amount, 0, cmds.order.len() as i32) as usize;
 
-                    let selection = match cmds.get_by_index(next_index) {
+                    let selected_cmd = cmds.get_by_index(next_index);
+
+                    let selection = match selected_cmd.clone() {
                         Some(cmd) => CommandSelection::Selected(*Cmd::uuid(&cmd)),
                         None => CommandSelection::Initial,
                     };
 
+                    let total_cmds = (cmds.order.len() - 1) as f32;
+
                     state.selection = selection;
 
-                    Command::none()
+                    match selected_cmd {
+                        None => scrollable::snap_to(SCROLLABLE_ID.clone(), RelativeOffset::START),
+                        Some(_) => {
+                            let offset = (1.0 / (total_cmds)) * selection_index as f32;
+                            println!("{offset}");
+                            scrollable::snap_to(SCROLLABLE_ID.clone(), RelativeOffset { x: 0.0, y: offset })
+                        }
+                    }
                 }
                 Message::Submit => {
                     let id = match state.selection {
@@ -231,10 +243,10 @@ impl Application for Commands {
 
         let content: Element<_> = match cmds {
             Some(el) => scrollable(container(el).padding(iced::Padding::from([
-                5.,
+                0.,
                 10. + crate::gui::style::DEFAULT_BORDER_RADIUS,
-                10.,
-                10.,
+                0.,
+                0.,
             ])))
             .id(SCROLLABLE_ID.clone())
             .into(),
@@ -246,7 +258,7 @@ impl Application for Commands {
                 .into(),
         };
 
-        container(column![input, content])
+        container(column![input, container(content).padding(10)])
             .height(Length::Fill)
             .style(get_item_container_style())
             .into()
