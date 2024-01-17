@@ -1,8 +1,6 @@
-
-
 use iced::theme::Theme;
-use iced::widget::scrollable::RelativeOffset;
 use iced::widget::{button, column, container, keyed_column, scrollable, text, text_input};
+use iced::widget::scrollable::{AbsoluteOffset, RelativeOffset, Viewport};
 use iced::window::{self, Level};
 use iced::{keyboard, Padding};
 use iced::{Application, Element};
@@ -56,6 +54,7 @@ struct State {
     cmds: Cmds,
     filtered_cmds: Option<FilteredCmds>,
     selection: CommandSelection,
+    scrollable_offset: AbsoluteOffset,
 }
 
 #[derive(Debug, Clone)]
@@ -66,6 +65,7 @@ enum Message {
     Exit,
     Select(i32),
     Submit,
+    OnScroll(Viewport)
 }
 
 struct ApplicationStyle {}
@@ -121,6 +121,10 @@ impl Application for Commands {
                 text_input::focus(INPUT_ID.clone())
             }
             Commands::Loaded(state) => match message {
+                Message::OnScroll(viewport) => {
+                    state.scrollable_offset = viewport.absolute_offset();
+                    Command::none()
+                }
                 Message::InputChanged(value) => {
                     state.filtered_cmds = Some(state.cmds.filter_by_value(&value));
                     state.input_value = value;
@@ -248,8 +252,9 @@ impl Application for Commands {
                 0.,
                 0.,
             ])))
-            .id(SCROLLABLE_ID.clone())
-            .into(),
+                .on_scroll(Message::OnScroll)
+                .id(SCROLLABLE_ID.clone())
+                .into(),
             _ => container(text("Nothing found"))
                 .width(Length::Fill)
                 .height(Length::Fill)
