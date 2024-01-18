@@ -94,7 +94,7 @@ impl Mode {
         }
     }
 
-    fn execute(self) -> Mode {
+    pub fn execute(self) -> Mode {
         match self.kind {
             ModeKind::Default => self,
             ModeKind::SyncShellCommand(x) => {

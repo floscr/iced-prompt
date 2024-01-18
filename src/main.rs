@@ -100,14 +100,17 @@ impl Application for Commands {
                 command: String::from("ls"),
             }),
             ..Mode::default()
-        };
+        }
+        .execute();
         let state = State {
             mode,
             ..State::default()
         };
         (
             Commands::Loaded(state),
-            Command::none(), // Command::perform(Mode::execute(), Message::IoLoaded),
+            // Command::none(),
+            // Command::perform(Mode::execute(mode), Message::IoLoaded),
+            text_input::focus(INPUT_ID.clone()),
         )
         // (
         //     Commands::Loading,
