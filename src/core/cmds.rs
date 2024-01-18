@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 use uuid::Uuid;
 
+use crate::utils::list::SinglyLinkedList;
+
 pub const SIMPLE_CMD_HEIGHT: f32 = 28.;
 
 // Command ---------------------------------------------------------------------
@@ -49,6 +51,11 @@ impl Cmd {
 pub struct Cmds {
     pub cmds: HashMap<Uuid, Cmd>,
     pub order: Vec<Uuid>,
+}
+
+#[derive(Debug, Default, Clone)]
+pub struct FilteredCmds {
+    pub cmds: Vec<Uuid>,
 }
 
 impl Cmds {
@@ -123,6 +130,51 @@ impl Cmds {
 // History ---------------------------------------------------------------------
 
 #[derive(Debug, Default, Clone)]
-pub struct FilteredCmds {
-    pub cmds: Vec<Uuid>,
+pub struct History {
+    pub history: SinglyLinkedList<Cmds>,
+}
+
+impl History {
+    pub fn push(self, cmds: Cmds) -> History {
+        let mut cmds_list = self.history.clone();
+        cmds_list.push(cmds);
+        History { history: cmds_list }
+    }
+
+    pub fn pop(self) -> History {
+        let mut cmds_list = self.history.clone();
+        cmds_list.pop();
+        History { history: cmds_list }
+    }
+
+    pub fn head(self) -> Option<Cmds> {
+        let mut cmds_list = self.history.clone();
+        cmds_list.pop()
+    }
+
+    pub fn len(self) -> usize {
+        self.history.len()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Cmds, History};
+
+    fn it_works() {
+        let history_with_two_items = History::default()
+            .push(Cmds::default())
+            .push(Cmds::default())
+            .pop();
+
+        assert_eq!(history_with_two_items.len(), 2);
+    }
+
+    fn test_head() {
+        assert_eq!(History::default().head(), None);
+        assert_eq!(
+            History::default().push(Cmds::default()).head(),
+            Some(Cmds::default())
+        );
+    }
 }
