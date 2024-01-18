@@ -19,6 +19,7 @@ pub struct Base {
 }
 
 impl Cmd {
+    #[allow(dead_code)]
     pub fn new(value: String) -> Cmd {
         Cmd::Simple(Base {
             id: Uuid::new_v4(),
@@ -134,6 +135,7 @@ pub struct History {
     pub history: SinglyLinkedList<Cmds>,
 }
 
+#[allow(dead_code)]
 impl History {
     pub fn push(self, cmds: Cmds) -> History {
         let mut cmds_list = self.history.clone();
