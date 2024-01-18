@@ -49,7 +49,20 @@ impl Item {
 // Commands --------------------------------------------------------------------
 
 #[derive(Debug, Default, Clone, Eq, PartialEq)]
+pub enum ModeKind {
+    #[default]
+    Default,
+    SyncShellCommand(ShellCommandProperties),
+}
+
+#[derive(Debug, Default, Clone, Eq, PartialEq)]
+pub struct ShellCommandProperties {
+    command: String,
+}
+
+#[derive(Debug, Default, Clone, Eq, PartialEq)]
 pub struct Mode {
+    pub kind: ModeKind,
     pub items: HashMap<Uuid, Item>,
     pub order: Vec<Uuid>,
 }
@@ -74,7 +87,11 @@ impl Mode {
             order.push(id);
         }
 
-        Mode { items: cmds, order }
+        Mode {
+            kind: ModeKind::Default,
+            items: cmds,
+            order,
+        }
     }
 
     pub fn get_by_index(&self, index: usize) -> Option<Item> {
@@ -107,6 +124,7 @@ impl Mode {
         Mode {
             items: self.items,
             order: filtered_cmds.items.clone(),
+            ..self
         }
     }
 
