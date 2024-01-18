@@ -154,6 +154,14 @@ impl History {
         cmds_list.pop()
     }
 
+    pub fn split(self) -> Option<(Cmds, SinglyLinkedList<Cmds>)> {
+        let mut cmds_list = self.history.clone();
+        match cmds_list.pop() {
+            Some(cmds) => Some((cmds, cmds_list.clone())),
+            _ => None,
+        }
+    }
+
     pub fn len(self) -> usize {
         self.history.len()
     }
@@ -178,5 +186,15 @@ mod tests {
             History::default().push(Cmds::default()).head(),
             Some(Cmds::default())
         );
+    }
+
+    fn test_split() {
+        let (head, tail) = History::default()
+            .push(Cmds::default())
+            .push(Cmds::default())
+            .split()
+            .unwrap();
+        assert_eq!(head, Cmds::default());
+        assert_eq!(tail.len(), 1);
     }
 }
