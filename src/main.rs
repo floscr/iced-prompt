@@ -2,8 +2,8 @@ use iced::theme::Theme;
 use iced::widget::scrollable::{AbsoluteOffset, RelativeOffset, Viewport};
 use iced::widget::{
     button, column, container, horizontal_rule, keyed_column, row, scrollable, text, text_input,
-    vertical_space,
 };
+
 use iced::window::{self, Level};
 use iced::{keyboard, Alignment, Padding};
 use iced::{Application, Element};
