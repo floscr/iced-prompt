@@ -4,6 +4,8 @@ use uuid::Uuid;
 pub const SIMPLE_CMD_HEIGHT: f32 = 28.;
 
 #[derive(Debug, Clone)]
+// Command ---------------------------------------------------------------------
+
 pub enum Cmd {
     Simple(Base),
 }
@@ -42,6 +44,8 @@ impl Cmd {
 }
 
 #[derive(Debug, Default, Clone)]
+// Commands --------------------------------------------------------------------
+
 pub struct Cmds {
     pub cmds: HashMap<Uuid, Cmd>,
     pub order: Vec<Uuid>,
@@ -115,6 +119,8 @@ impl Cmds {
         }
     }
 }
+
+// History ---------------------------------------------------------------------
 
 #[derive(Debug, Default, Clone)]
 pub struct FilteredCmds {
