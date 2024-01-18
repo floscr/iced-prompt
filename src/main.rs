@@ -14,6 +14,7 @@ use uuid::Uuid;
 
 mod core;
 mod gui;
+mod utils;
 
 use core::cmds;
 use core::cmds::{Cmd, Cmds, FilteredCmds};
