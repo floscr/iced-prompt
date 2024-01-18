@@ -156,10 +156,7 @@ impl History {
 
     pub fn split(self) -> Option<(Cmds, SinglyLinkedList<Cmds>)> {
         let mut cmds_list = self.history.clone();
-        match cmds_list.pop() {
-            Some(cmds) => Some((cmds, cmds_list.clone())),
-            _ => None,
-        }
+        cmds_list.pop().map(|cmds| (cmds, cmds_list.clone()))
     }
 
     pub fn len(self) -> usize {
