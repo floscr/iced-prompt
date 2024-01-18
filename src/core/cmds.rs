@@ -3,14 +3,14 @@ use uuid::Uuid;
 
 pub const SIMPLE_CMD_HEIGHT: f32 = 28.;
 
-#[derive(Debug, Clone)]
 // Command ---------------------------------------------------------------------
 
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum Cmd {
     Simple(Base),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Base {
     pub id: Uuid,
     pub value: String,
@@ -43,9 +43,9 @@ impl Cmd {
     }
 }
 
-#[derive(Debug, Default, Clone)]
 // Commands --------------------------------------------------------------------
 
+#[derive(Debug, Default, Clone, Eq, PartialEq)]
 pub struct Cmds {
     pub cmds: HashMap<Uuid, Cmd>,
     pub order: Vec<Uuid>,
