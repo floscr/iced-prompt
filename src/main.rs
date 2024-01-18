@@ -16,7 +16,7 @@ mod core;
 mod gui;
 mod utils;
 
-use core::cmds;
+use core::cmds::{self, History};
 use core::cmds::{Cmd, Cmds, FilteredCmds};
 use gui::style::DEFAULT_BORDER_RADIUS;
 
@@ -55,6 +55,7 @@ enum Commands {
 #[derive(Debug, Default)]
 struct State {
     input_value: String,
+    history: History,
     cmds: Cmds,
     filtered_cmds: Option<FilteredCmds>,
     selection: CommandSelection,
