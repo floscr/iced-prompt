@@ -16,8 +16,8 @@ mod core;
 mod gui;
 mod utils;
 
-use core::cmds::{self, History};
-use core::cmds::{Cmd, Cmds, FilteredCmds};
+use core::mode::{self, History};
+use core::mode::{FilteredItems, Item, Mode};
 use gui::style::DEFAULT_BORDER_RADIUS;
 
 static SCROLLABLE_ID: Lazy<scrollable::Id> = Lazy::new(scrollable::Id::unique);
@@ -55,9 +55,8 @@ enum Commands {
 #[derive(Debug, Default)]
 struct State {
     input_value: String,
-    history: History,
-    cmds: Cmds,
-    filtered_cmds: Option<FilteredCmds>,
+    items: Mode,
+    filtered_cmds: Option<FilteredItems>,
     selection: CommandSelection,
     scrollable_offset: AbsoluteOffset,
 }
@@ -114,7 +113,7 @@ impl Application for Commands {
                     Message::IoLoaded(result) => {
                         *self = match result {
                             Some(data) => Commands::Loaded(State {
-                                cmds: Cmds::from_string(data.value),
+                                items: Mode::from_string(data.value),
                                 ..State::default()
                             }),
                             None => Commands::Loaded(State::default()),
@@ -131,7 +130,7 @@ impl Application for Commands {
                     Command::none()
                 }
                 Message::InputChanged(value) => {
-                    state.filtered_cmds = Some(state.cmds.filter_by_value(&value));
+                    state.filtered_cmds = Some(state.items.filter_by_value(&value));
                     state.input_value = value;
                     state.selection = CommandSelection::Initial;
 
@@ -140,9 +139,9 @@ impl Application for Commands {
                 Message::Select(amount) => {
                     let cmds = match &state.filtered_cmds {
                         Some(filtered_cmds) => {
-                            state.cmds.clone().with_filtered_order(filtered_cmds)
+                            state.items.clone().with_filtered_order(filtered_cmds)
                         }
-                        None => state.cmds.clone(),
+                        None => state.items.clone(),
                     };
 
                     let selection_index = match state.selection {
@@ -159,7 +158,7 @@ impl Application for Commands {
                     let selected_cmd = cmds.get_by_index(next_index);
 
                     let selection = match selected_cmd.clone() {
-                        Some(cmd) => CommandSelection::Selected(*Cmd::uuid(&cmd)),
+                        Some(cmd) => CommandSelection::Selected(*Item::uuid(&cmd)),
                         None => CommandSelection::Initial,
                     };
 
@@ -182,13 +181,13 @@ impl Application for Commands {
                 }
                 Message::Submit => {
                     let id = match state.selection {
-                        CommandSelection::Initial => Some(state.cmds.order[0]),
+                        CommandSelection::Initial => Some(state.items.order[0]),
                         CommandSelection::Selected(selected_id) => Some(selected_id),
                     };
 
-                    match id.and_then(|id| state.cmds.cmds.get(&id)) {
+                    match id.and_then(|id| state.items.items.get(&id)) {
                         Some(cmd) => {
-                            let value = cmds::Cmd::value(cmd);
+                            let value = mode::Item::value(cmd);
                             println!("{}", value);
                             std::process::exit(0)
                         }
@@ -215,8 +214,8 @@ impl Application for Commands {
         let input_value = &state.input_value;
 
         let cmds = match &state.filtered_cmds {
-            Some(filtered_cmds) => state.cmds.clone().with_filtered_order(filtered_cmds),
-            None => state.cmds.clone(),
+            Some(filtered_cmds) => state.items.clone().with_filtered_order(filtered_cmds),
+            None => state.items.clone(),
         };
 
         let selection = &state.selection;
@@ -224,7 +223,7 @@ impl Application for Commands {
         let filtered_items_len = cmds.order.len();
 
         let items = cmds.map(|i, id, cmd| {
-            let value = cmds::Cmd::value(cmd).clone();
+            let value = mode::Item::value(cmd).clone();
             let button_position = match i {
                 0 => ButtonPosition::Top,
                 _ if i == filtered_items_len - 1 => ButtonPosition::Bottom,
@@ -243,7 +242,7 @@ impl Application for Commands {
                 *id,
                 button(
                     container(text(value).line_height(1.25))
-                        .height(cmds::SIMPLE_CMD_HEIGHT)
+                        .height(mode::SIMPLE_CMD_HEIGHT)
                         .center_y(),
                 )
                 .style(button_style)
@@ -368,11 +367,11 @@ impl PromptData {
     }
 }
 
-fn filter_matches(items: &[cmds::Cmd], substring: &str) -> Vec<cmds::Cmd> {
+fn filter_matches(items: &[mode::Item], substring: &str) -> Vec<mode::Item> {
     items
         .iter()
         .filter_map(|cmd| {
-            let value = cmds::Cmd::value(cmd);
+            let value = mode::Item::value(cmd);
             let is_match = value.to_lowercase().contains(&substring.to_lowercase());
 
             if is_match {
