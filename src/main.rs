@@ -201,7 +201,9 @@ impl Application for Commands {
     }
 
     fn view(&self) -> Element<Message> {
-        use crate::gui::style::{get_item_container_style, Button, ButtonPosition, TextInput, Rule};
+        use crate::gui::style::{
+            get_item_container_style, Button, ButtonPosition, Rule, TextInput,
+        };
 
         let default_state = State::default();
         let state = match self {
