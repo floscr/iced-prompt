@@ -16,8 +16,7 @@ mod core;
 mod gui;
 mod utils;
 
-use core::mode::{self, History};
-use core::mode::{FilteredItems, Item, Mode};
+use core::mode::{self, FilteredItems, History, Item, Mode, ModeKind, ShellCommandProperties};
 use gui::style::DEFAULT_BORDER_RADIUS;
 
 static SCROLLABLE_ID: Lazy<scrollable::Id> = Lazy::new(scrollable::Id::unique);
@@ -97,7 +96,15 @@ impl Application for Commands {
 
     fn new(_flags: ()) -> (Commands, Command<Message>) {
         (
-            Commands::Loaded(State { ..State::default() }),
+            Commands::Loaded(State {
+                mode: Mode {
+                    kind: ModeKind::SyncShellCommand(mode::ShellCommandProperties {
+                        command: String::from(""),
+                    }),
+                    ..Mode::default()
+                },
+                ..State::default()
+            }),
             Command::none(), // Command::perform(Mode::execute(), Message::IoLoaded),
         )
         // (

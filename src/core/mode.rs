@@ -57,7 +57,7 @@ pub enum ModeKind {
 
 #[derive(Debug, Default, Clone, Eq, PartialEq)]
 pub struct ShellCommandProperties {
-    command: String,
+    pub command: String,
 }
 
 #[derive(Debug, Default, Clone, Eq, PartialEq)]
