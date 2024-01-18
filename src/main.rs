@@ -95,16 +95,18 @@ impl Application for Commands {
     }
 
     fn new(_flags: ()) -> (Commands, Command<Message>) {
-        (
-            Commands::Loaded(State {
-                mode: Mode {
-                    kind: ModeKind::SyncShellCommand(mode::ShellCommandProperties {
-                        command: String::from(""),
-                    }),
-                    ..Mode::default()
-                },
-                ..State::default()
+        let mode = Mode {
+            kind: ModeKind::SyncShellCommand(mode::ShellCommandProperties {
+                command: String::from("ls"),
             }),
+            ..Mode::default()
+        };
+        let state = State {
+            mode,
+            ..State::default()
+        };
+        (
+            Commands::Loaded(state),
             Command::none(), // Command::perform(Mode::execute(), Message::IoLoaded),
         )
         // (

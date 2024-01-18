@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, process::Command};
 use uuid::Uuid;
 
 use crate::utils::list::SinglyLinkedList;
@@ -91,6 +91,48 @@ impl Mode {
             kind: ModeKind::Default,
             items: cmds,
             order,
+        }
+    }
+
+    fn execute(self) -> Mode {
+        match self.kind {
+            ModeKind::Default => self,
+            ModeKind::SyncShellCommand(x) => {
+                let command = x.command;
+
+                let output = Command::new("sh")
+                    .arg("-c")
+                    .arg(command.clone())
+                    .output()
+                    .expect("Failed to execute command");
+
+                match output.status.code() {
+                    Some(0) => {
+                        let result = String::from_utf8_lossy(&output.stdout).to_string();
+                        let mode = Mode::from_string(result);
+                        Mode {
+                            kind: ModeKind::SyncShellCommand(ShellCommandProperties { command }),
+                            ..mode
+                        }
+                    }
+                    Some(_code) => {
+                        Mode {
+                            kind: ModeKind::SyncShellCommand(ShellCommandProperties { command }),
+                            ..self
+                        }
+                        // let result = String::from_utf8_lossy(&output.stderr);
+                        // eprintln!("Error executing command (exit code {}):\n{}", code, result);
+                    }
+                    None => {
+                        Mode {
+                            kind: ModeKind::SyncShellCommand(ShellCommandProperties { command }),
+                            ..self
+                        }
+                        // // The command was terminated by a signal or other unexpected event
+                        // eprintln!("Command terminated unexpectedly");
+                    }
+                }
+            }
         }
     }
 
