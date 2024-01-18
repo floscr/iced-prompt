@@ -96,8 +96,8 @@ impl Application for Commands {
 
     fn new(_flags: ()) -> (Commands, Command<Message>) {
         (
-            Commands::Loading,
-            Command::perform(PromptData::load(), Message::IoLoaded),
+            Commands::Loaded(State { ..State::default() }),
+            Command::none(), // Command::perform(Mode::execute(), Message::IoLoaded),
         )
     }
 
