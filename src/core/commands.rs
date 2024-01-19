@@ -1,13 +1,14 @@
 use std::collections::HashMap;
 
+use serde::Deserialize;
 use uuid::Uuid;
 
-#[derive(Debug, Default, Clone, Eq, PartialEq)]
+#[derive(Deserialize, Debug, Default, Clone, Eq, PartialEq)]
 pub struct ShellCommandProperties {
     pub command: String,
 }
 
-#[derive(Debug, Default, Clone, Eq, PartialEq)]
+#[derive(Deserialize, Default, Debug, Clone, Eq, PartialEq)]
 pub enum CommandKind {
     #[default]
     Initial,
@@ -16,24 +17,26 @@ pub enum CommandKind {
     // Error(CommandError),
 }
 
-#[derive(Debug, Default, Clone, Eq, PartialEq)]
+#[derive(Deserialize, Debug, Default, Clone, Eq, PartialEq)]
 pub struct Items<T> {
     pub items: HashMap<Uuid, T>,
     pub order: Vec<Uuid>,
 }
 
-#[derive(Debug, Default, Clone, Eq, PartialEq)]
+#[derive(Deserialize, Debug, Default, Clone, Eq, PartialEq)]
 pub enum ActionKind {
     #[default]
     Exit,
     Next,
 }
 
-#[derive(Debug, Default, Clone, Eq, PartialEq)]
+#[derive(Deserialize, Default, Debug, Clone, Eq, PartialEq)]
 pub struct Command {
     pub value: String,
     pub kind: CommandKind,
+    #[serde(default)]
     pub action: ActionKind,
+    #[serde(default)]
     pub items: Option<Items<Command>>,
 }
 
@@ -50,7 +53,8 @@ mod tests {
         };
     }
 
-    fn it_works() {
+    #[test]
+    pub fn it_works() {
         let command_uuid = Uuid::new_v4();
 
         let command = Command {
@@ -85,5 +89,18 @@ mod tests {
             ..Command::default()
         };
         assert_eq!(command.value, "Commands");
+    }
+
+    #[test]
+    fn it_serializes() {
+        let data = r#"{
+            "type": "Commands",
+            "value": "Commands",
+            "kind": "Initial"
+        }"#;
+
+        let v: Command = serde_json::from_str(data).unwrap();
+
+        assert_eq!(v.value, "Commands");
     }
 }
