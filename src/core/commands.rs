@@ -12,7 +12,6 @@ pub struct ShellCommandProperties {
 pub enum CommandKind {
     #[default]
     Initial,
-    StdOutCommand,
     SyncShellCommand(ShellCommandProperties),
     // Error(CommandError),
 }
@@ -33,10 +32,11 @@ pub enum ActionKind {
 #[derive(Deserialize, Default, Debug, Clone, Eq, PartialEq)]
 pub struct Command {
     pub value: String,
+    #[serde(default)]
     pub kind: CommandKind,
     #[serde(default)]
     pub action: ActionKind,
-    #[serde(default)]
+    #[serde(default, flatten)]
     pub items: Option<Items<Command>>,
 }
 
@@ -92,7 +92,7 @@ mod tests {
     }
 
     #[test]
-    fn it_serializes() {
+    fn it_deserializes() {
         let data = r#"{
             "type": "Commands",
             "value": "Commands",
