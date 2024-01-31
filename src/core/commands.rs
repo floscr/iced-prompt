@@ -6,8 +6,6 @@ use std::fmt;
 
 use uuid::Uuid;
 
-// Commands Deserializer -------------------------------------------------------
-
 // Types -----------------------------------------------------------------------
 
 #[derive(Deserialize, Default, Debug, Clone, Eq, PartialEq)]
@@ -47,6 +45,9 @@ pub struct Command {
     pub items: Items<Command>,
 }
 
+// Deserialization -------------------------------------------------------------
+
+// Deserialize items from a flat array to Items<Command>
 impl<'de> Deserialize<'de> for Items<Command> {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -81,6 +82,8 @@ impl<'de> Deserialize<'de> for Items<Command> {
         deserializer.deserialize_seq(ItemsVisitor)
     }
 }
+
+// Tests -----------------------------------------------------------------------
 
 #[cfg(test)]
 mod tests {
