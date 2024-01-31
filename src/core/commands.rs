@@ -136,22 +136,22 @@ mod tests {
     #[test]
     fn deserializes_nested_command() {
         let data = r#"{
-        "value": "Commands",
-        "kind": "Initial",
-        "action": "Exit",
-        "items": [
-            {
-                "value": "ls",
-                "kind": {
-                    "SyncShellCommand": {
-                        "command": "ls"
-                    }
-                },
-                "action": "Next"
+    "value": "Commands",
+    "kind": "Initial",
+    "action": "Exit",
+    "items": [
+        {
+        "value": "ls",
+        "kind": {
+            "SyncShellCommand": {
+                "command": "ls"
             }
+        },
+        "action": "Next"
+    }
 
-        ]
-    }"#;
+    ]
+}"#;
 
         let v: Command = serde_json::from_str(data).unwrap();
 
@@ -164,11 +164,11 @@ mod tests {
     #[test]
     fn deserialize_simple_command_with_defaults() {
         let data = r#"{
-            "type": "Command",
-            "value": "Commands",
-            "kind": "Initial",
-            "items": []
-        }"#;
+    "type": "Command",
+    "value": "Commands",
+    "kind": "Initial",
+    "items": []
+}"#;
 
         let v: Command = serde_json::from_str(data).unwrap();
 
