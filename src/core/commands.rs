@@ -43,7 +43,7 @@ pub struct Command {
     pub kind: CommandKind,
     #[serde(default)]
     pub action: ActionKind,
-    #[serde(deserialize_with = "Items::deserialize")]
+    #[serde(default, deserialize_with = "Items::deserialize")]
     pub items: Items<Command>,
 }
 
@@ -95,43 +95,43 @@ mod tests {
         };
     }
 
-    // #[test]
-    // pub fn it_works() {
-    //     let command_uuid = Uuid::new_v4();
+    #[test]
+    pub fn it_works() {
+        let command_uuid = Uuid::new_v4();
 
-    //     let command = Command {
-    //         value: s!("Commands"),
-    //         items: Items {
-    //             items: HashMap::from([
-    //                 (
-    //                     command_uuid,
-    //                     Command {
-    //                         value: s!("ls"),
-    //                         kind: CommandKind::SyncShellCommand(ShellCommandProperties {
-    //                             command: s!("ls"),
-    //                         }),
-    //                         action: ActionKind::Next,
-    //                         ..Command::default()
-    //                     },
-    //                 ),
-    //                 (
-    //                     command_uuid,
-    //                     Command {
-    //                         value: s!("ls"),
-    //                         kind: CommandKind::SyncShellCommand(ShellCommandProperties {
-    //                             command: s!("ls"),
-    //                         }),
-    //                         action: ActionKind::Exit,
-    //                         ..Command::default()
-    //                     },
-    //                 ),
-    //             ]),
-    //             order: vec![command_uuid],
-    //         },
-    //         ..Command::default()
-    //     };
-    //     assert_eq!(command.value, "Commands");
-    // }
+        let command = Command {
+            value: s!("Commands"),
+            items: Items {
+                items: HashMap::from([
+                    (
+                        command_uuid,
+                        Command {
+                            value: s!("ls"),
+                            kind: CommandKind::SyncShellCommand(ShellCommandProperties {
+                                command: s!("ls"),
+                            }),
+                            action: ActionKind::Next,
+                            ..Command::default()
+                        },
+                    ),
+                    (
+                        command_uuid,
+                        Command {
+                            value: s!("ls"),
+                            kind: CommandKind::SyncShellCommand(ShellCommandProperties {
+                                command: s!("ls"),
+                            }),
+                            action: ActionKind::Exit,
+                            ..Command::default()
+                        },
+                    ),
+                ]),
+                order: vec![command_uuid],
+            },
+            ..Command::default()
+        };
+        assert_eq!(command.value, "Commands");
+    }
 
     #[test]
     fn deserializes_nested_command() {
@@ -140,27 +140,38 @@ mod tests {
         "kind": "Initial",
         "action": "Exit",
         "items": [
+            {
+                "value": "ls",
+                "kind": {
+                    "SyncShellCommand": {
+                        "command": "ls"
+                    }
+                },
+                "action": "Next"
+            }
+
         ]
     }"#;
 
         let v: Command = serde_json::from_str(data).unwrap();
+
         println!("{:#?}", v);
 
-        // assert_eq!(v.value, "Commands");
-        // assert_eq!(v.items.len(), 1);
+        assert_eq!(v.value, "Commands");
+        assert_eq!(v.items.order.len(), 1);
     }
 
-    // #[test]
-    // fn deserialize_simple_command_with_defaults() {
-    //     let data = r#"{
-    //         "type": "Command",
-    //         "value": "Commands",
-    //         "kind": "Initial",
-    //         "items": []
-    //     }"#;
+    #[test]
+    fn deserialize_simple_command_with_defaults() {
+        let data = r#"{
+            "type": "Command",
+            "value": "Commands",
+            "kind": "Initial",
+            "items": []
+        }"#;
 
-    //     let v: Command = serde_json::from_str(data).unwrap();
+        let v: Command = serde_json::from_str(data).unwrap();
 
-    //     assert_eq!(v.value, "Commands");
-    // }
+        assert_eq!(v.value, "Commands");
+    }
 }
