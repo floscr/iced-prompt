@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use serde::de::{self, Deserializer, SeqAccess, Visitor};
+use serde::de::{Deserializer, SeqAccess, Visitor};
 use serde::Deserialize;
 use std::fmt;
 
