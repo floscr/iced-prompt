@@ -108,14 +108,8 @@ impl Application for LoadingState {
         };
         (
             LoadingState::Loaded(state),
-            // Command::none(),
-            // Command::perform(Mode::execute(mode), Message::IoLoaded),
             text_input::focus(INPUT_ID.clone()),
         )
-        // (
-        //     Commands::Loading,
-        //     Command::perform(PromptData::load(), Message::IoLoaded),
-        // )
     }
 
     fn title(&self) -> String {
