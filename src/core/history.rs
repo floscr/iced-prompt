@@ -20,7 +20,7 @@ impl History {
         History { history: cmds_list }
     }
 
-    pub fn head(self) -> Option<Command> {
+    pub fn head(&self) -> Option<Command> {
         let mut cmds_list = self.history.clone();
         cmds_list.pop()
     }

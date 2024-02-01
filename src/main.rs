@@ -15,7 +15,8 @@ mod core;
 mod gui;
 mod utils;
 
-use core::commands::Command;
+use core::commands::{self, Command};
+use core::history::History;
 use core::mode::{self, FilteredItems, Item, Mode, ModeKind, ShellCommandProperties};
 use gui::style::DEFAULT_BORDER_RADIUS;
 
@@ -54,6 +55,7 @@ enum LoadingState {
 #[derive(Debug, Default)]
 struct State {
     input_value: String,
+    history: History,
     mode: Mode,
     filtered_cmds: Option<FilteredItems>,
     selection: CommandSelection,
@@ -95,15 +97,28 @@ impl Application for LoadingState {
     }
 
     fn new(_flags: ()) -> (LoadingState, iced::Command<Message>) {
-        let mode = Mode {
-            kind: ModeKind::SyncShellCommand(mode::ShellCommandProperties {
-                command: String::from("ls"),
-            }),
-            ..Mode::default()
-        }
-        .execute();
+        let data = r#"{
+    "value": "Commands",
+    "kind": "Initial",
+    "action": "Exit",
+    "items": [
+        {
+        "value": "ls",
+        "kind": {
+            "SyncShellCommand": {
+                "command": "ls"
+            }
+        },
+        "action": "Next"
+    }
+
+    ]
+}"#;
+
+        let cmd: Command = serde_json::from_str(data).unwrap();
+
         let state = State {
-            mode,
+            history: History::default().push(cmd),
             ..State::default()
         };
         (
@@ -223,18 +238,21 @@ impl Application for LoadingState {
             LoadingState::Loaded(state) => state,
         };
         let input_value = &state.input_value;
+        let history = &state.history;
 
-        let cmds = match &state.filtered_cmds {
+        let old_cmds = match &state.filtered_cmds {
             Some(filtered_cmds) => state.mode.clone().with_filtered_order(filtered_cmds),
             None => state.mode.clone(),
         };
 
+        let current_cmds = history.head().unwrap_or_default();
+
         let selection = &state.selection;
 
-        let filtered_items_len = cmds.order.len();
+        let filtered_items_len = old_cmds.order.len();
 
-        let items = cmds.map(|i, id, cmd| {
-            let value = mode::Item::value(cmd).clone();
+        let items = current_cmds.map_items(|i, id, cmd| {
+            let value = &cmd.value;
             let button_position = match i {
                 0 => ButtonPosition::Top,
                 _ if i == filtered_items_len - 1 => ButtonPosition::Bottom,
@@ -262,7 +280,7 @@ impl Application for LoadingState {
             )
         });
 
-        let cmds = keyed_column(items)
+        let cmds_column = keyed_column(items)
             .spacing(1)
             .padding(iced::Padding::from([
                 0.,
@@ -272,7 +290,7 @@ impl Application for LoadingState {
             ]))
             .into();
 
-        let content: Element<_> = match cmds {
+        let content: Element<_> = match cmds_column {
             Some(el) => scrollable(row![el])
                 .on_scroll(Message::OnScroll)
                 .height(Length::Fill)
