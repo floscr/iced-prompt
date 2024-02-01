@@ -23,7 +23,7 @@ static SCROLLABLE_ID: Lazy<scrollable::Id> = Lazy::new(scrollable::Id::unique);
 static INPUT_ID: Lazy<text_input::Id> = Lazy::new(text_input::Id::unique);
 
 pub fn main() -> iced::Result {
-    LoadingCommands::run(Settings {
+    LoadingState::run(Settings {
         window: window::Settings {
             size: Size::new(700.0, 500.0),
             position: window::Position::Centered,
@@ -46,7 +46,7 @@ enum CommandSelection {
 }
 
 #[derive(Debug)]
-enum LoadingCommands {
+enum LoadingState {
     Loading,
     Loaded(State),
 }
@@ -84,7 +84,7 @@ impl iced::application::StyleSheet for ApplicationStyle {
     }
 }
 
-impl Application for LoadingCommands {
+impl Application for LoadingState {
     type Message = Message;
     type Theme = Theme;
     type Executor = iced::executor::Default;
@@ -94,7 +94,7 @@ impl Application for LoadingCommands {
         Theme::Dark
     }
 
-    fn new(_flags: ()) -> (LoadingCommands, iced::Command<Message>) {
+    fn new(_flags: ()) -> (LoadingState, iced::Command<Message>) {
         let mode = Mode {
             kind: ModeKind::SyncShellCommand(mode::ShellCommandProperties {
                 command: String::from("ls"),
@@ -107,7 +107,7 @@ impl Application for LoadingCommands {
             ..State::default()
         };
         (
-            LoadingCommands::Loaded(state),
+            LoadingState::Loaded(state),
             // Command::none(),
             // Command::perform(Mode::execute(mode), Message::IoLoaded),
             text_input::focus(INPUT_ID.clone()),
@@ -124,16 +124,16 @@ impl Application for LoadingCommands {
 
     fn update(&mut self, message: Message) -> iced::Command<Message> {
         match self {
-            LoadingCommands::Loading => {
+            LoadingState::Loading => {
                 #[allow(clippy::single_match)]
                 match message {
                     Message::IoLoaded(result) => {
                         *self = match result {
-                            Some(data) => LoadingCommands::Loaded(State {
+                            Some(data) => LoadingState::Loaded(State {
                                 mode: Mode::from_string(data.value),
                                 ..State::default()
                             }),
-                            None => LoadingCommands::Loaded(State::default()),
+                            None => LoadingState::Loaded(State::default()),
                         };
                     }
                     _ => {}
@@ -141,7 +141,7 @@ impl Application for LoadingCommands {
 
                 text_input::focus(INPUT_ID.clone())
             }
-            LoadingCommands::Loaded(state) => match message {
+            LoadingState::Loaded(state) => match message {
                 Message::OnScroll(viewport) => {
                     state.scrollable_offset = viewport.absolute_offset();
                     iced::Command::none()
@@ -225,8 +225,8 @@ impl Application for LoadingCommands {
 
         let default_state = State::default();
         let state = match self {
-            LoadingCommands::Loading => &default_state,
-            LoadingCommands::Loaded(state) => state,
+            LoadingState::Loading => &default_state,
+            LoadingState::Loaded(state) => state,
         };
         let input_value = &state.input_value;
 
