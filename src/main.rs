@@ -251,7 +251,7 @@ impl Application for LoadingState {
 
         let filtered_items_len = old_cmds.order.len();
 
-        let items = current_cmds.map_items(|i, id, cmd| {
+        let items = current_cmds.map_filter_items(|i, id, cmd| {
             let value = &cmd.value;
             let button_position = match i {
                 0 => ButtonPosition::Top,
@@ -267,7 +267,7 @@ impl Application for LoadingState {
                 _ => Button::Primary(button_position),
             };
 
-            (
+            Some((
                 *id,
                 button(
                     container(text(value).line_height(1.25))
@@ -277,7 +277,7 @@ impl Application for LoadingState {
                 .style(button_style)
                 .width(Length::Fill)
                 .into(),
-            )
+            ))
         });
 
         let cmds_column = keyed_column(items)

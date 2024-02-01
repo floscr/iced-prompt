@@ -175,15 +175,15 @@ mod type_tests {
 // Impl ------------------------------------------------------------------------
 
 impl Command {
-    pub fn map_items<F, T>(&self, mut f: F) -> Vec<T>
+    pub fn map_filter_items<F, T>(&self, mut f: F) -> Vec<T>
     where
-        F: FnMut(usize, &Uuid, &Command) -> T,
+        F: FnMut(usize, &Uuid, &Command) -> Option<T>,
     {
         self.items
             .order
             .iter()
             .enumerate()
-            .filter_map(|(index, id)| self.items.items.get(id).map(|cmd| f(index, id, cmd)))
+            .filter_map(|(index, id)| self.items.items.get(id).and_then(|cmd| f(index, id, cmd)))
             .collect()
     }
 }
@@ -234,7 +234,7 @@ mod command_tests {
             ..Command::default()
         };
 
-        let command_values = command.map_items(|_, _, cmd| cmd.value.clone());
+        let command_values = command.map_filter_items(|_, _, cmd| cmd.value.clone());
 
         assert_eq!(command_values, vec![s!("ls"), s!["pwd"]]);
     }
