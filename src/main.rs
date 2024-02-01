@@ -3,7 +3,6 @@ use iced::widget::scrollable::{AbsoluteOffset, RelativeOffset, Viewport};
 use iced::widget::{
     button, column, container, horizontal_rule, keyed_column, row, scrollable, text, text_input,
 };
-
 use iced::window::{self, Level};
 use iced::{keyboard, Alignment, Padding};
 use iced::{Application, Element};
@@ -16,14 +15,15 @@ mod core;
 mod gui;
 mod utils;
 
-use core::mode::{self, FilteredItems, History, Item, Mode, ModeKind, ShellCommandProperties};
+// use core::commands::Command;
+use core::mode::{self, FilteredItems, Item, Mode, ModeKind, ShellCommandProperties};
 use gui::style::DEFAULT_BORDER_RADIUS;
 
 static SCROLLABLE_ID: Lazy<scrollable::Id> = Lazy::new(scrollable::Id::unique);
 static INPUT_ID: Lazy<text_input::Id> = Lazy::new(text_input::Id::unique);
 
 pub fn main() -> iced::Result {
-    Commands::run(Settings {
+    LoadingCommands::run(Settings {
         window: window::Settings {
             size: Size::new(700.0, 500.0),
             position: window::Position::Centered,
@@ -46,7 +46,7 @@ enum CommandSelection {
 }
 
 #[derive(Debug)]
-enum Commands {
+enum LoadingCommands {
     Loading,
     Loaded(State),
 }
@@ -84,7 +84,7 @@ impl iced::application::StyleSheet for ApplicationStyle {
     }
 }
 
-impl Application for Commands {
+impl Application for LoadingCommands {
     type Message = Message;
     type Theme = Theme;
     type Executor = iced::executor::Default;
@@ -94,7 +94,7 @@ impl Application for Commands {
         Theme::Dark
     }
 
-    fn new(_flags: ()) -> (Commands, Command<Message>) {
+    fn new(_flags: ()) -> (LoadingCommands, Command<Message>) {
         let mode = Mode {
             kind: ModeKind::SyncShellCommand(mode::ShellCommandProperties {
                 command: String::from("ls"),
@@ -107,7 +107,7 @@ impl Application for Commands {
             ..State::default()
         };
         (
-            Commands::Loaded(state),
+            LoadingCommands::Loaded(state),
             // Command::none(),
             // Command::perform(Mode::execute(mode), Message::IoLoaded),
             text_input::focus(INPUT_ID.clone()),
@@ -124,16 +124,16 @@ impl Application for Commands {
 
     fn update(&mut self, message: Message) -> Command<Message> {
         match self {
-            Commands::Loading => {
+            LoadingCommands::Loading => {
                 #[allow(clippy::single_match)]
                 match message {
                     Message::IoLoaded(result) => {
                         *self = match result {
-                            Some(data) => Commands::Loaded(State {
+                            Some(data) => LoadingCommands::Loaded(State {
                                 mode: Mode::from_string(data.value),
                                 ..State::default()
                             }),
-                            None => Commands::Loaded(State::default()),
+                            None => LoadingCommands::Loaded(State::default()),
                         };
                     }
                     _ => {}
@@ -141,7 +141,7 @@ impl Application for Commands {
 
                 text_input::focus(INPUT_ID.clone())
             }
-            Commands::Loaded(state) => match message {
+            LoadingCommands::Loaded(state) => match message {
                 Message::OnScroll(viewport) => {
                     state.scrollable_offset = viewport.absolute_offset();
                     Command::none()
@@ -225,8 +225,8 @@ impl Application for Commands {
 
         let default_state = State::default();
         let state = match self {
-            Commands::Loading => &default_state,
-            Commands::Loaded(state) => state,
+            LoadingCommands::Loading => &default_state,
+            LoadingCommands::Loaded(state) => state,
         };
         let input_value = &state.input_value;
 
