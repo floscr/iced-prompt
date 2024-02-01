@@ -186,6 +186,20 @@ impl Command {
             .filter_map(|(index, id)| self.items.items.get(id).and_then(|cmd| f(index, id, cmd)))
             .collect()
     }
+
+    pub fn filter_items_by_value(&self, substring: &str) -> Vec<Uuid> {
+        self.map_filter_items(|_, id, command| {
+            let matches_value = command
+                .value
+                .to_lowercase()
+                .contains(&substring.to_lowercase());
+            if matches_value {
+                Some(id.clone())
+            } else {
+                None
+            }
+        })
+    }
 }
 
 #[cfg(test)]
@@ -197,12 +211,11 @@ mod command_tests {
 
     use super::{ActionKind, Command, CommandKind, Items, ShellCommandProperties};
 
-    #[test]
-    fn maps_over_items_to_extract_values() {
+    fn make_test_command() -> Command {
         let command_a_uuid = Uuid::new_v4();
         let command_b_uuid = Uuid::new_v4();
 
-        let command = Command {
+        Command {
             value: s!("Commands"),
             items: Items {
                 items: HashMap::from([
@@ -232,10 +245,26 @@ mod command_tests {
                 order: vec![command_a_uuid, command_b_uuid],
             },
             ..Command::default()
-        };
+        }
+    }
 
-        let command_values = command.map_filter_items(|_, _, cmd| cmd.value.clone());
+    #[test]
+    fn maps_over_items_to_extract_values() {
+        let command = make_test_command();
+
+        let command_values = command.map_filter_items(|_, _, cmd| Some(cmd.value.clone()));
 
         assert_eq!(command_values, vec![s!("ls"), s!["pwd"]]);
+    }
+
+    #[test]
+    fn filters_by_value() {
+        let command = make_test_command();
+        let target_uuid = &command.items.order[0];
+
+        let command_values = command.filter_items_by_value("ls");
+
+        assert_eq!(command_values.len(), 1);
+        assert_eq!(command_values[0], target_uuid.clone());
     }
 }
