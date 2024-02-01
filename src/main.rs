@@ -15,7 +15,7 @@ mod core;
 mod gui;
 mod utils;
 
-// use core::commands::Command;
+use core::commands::Command;
 use core::mode::{self, FilteredItems, Item, Mode, ModeKind, ShellCommandProperties};
 use gui::style::DEFAULT_BORDER_RADIUS;
 
