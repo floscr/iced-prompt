@@ -83,20 +83,13 @@ impl<'de> Deserialize<'de> for Items<Command> {
     }
 }
 
-// Tests -----------------------------------------------------------------------
-
 #[cfg(test)]
-mod tests {
+mod type_tests {
+    use crate::s;
     use std::collections::HashMap;
     use uuid::Uuid;
 
     use super::{ActionKind, Command, CommandKind, Items, ShellCommandProperties};
-
-    macro_rules! s {
-        ($s:expr) => {
-            $s.to_string()
-        };
-    }
 
     #[test]
     pub fn it_works() {
