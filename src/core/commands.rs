@@ -171,3 +171,71 @@ mod type_tests {
         assert_eq!(v.value, "Commands");
     }
 }
+
+// Impl ------------------------------------------------------------------------
+
+impl Command {
+    pub fn map_items<F, T>(&self, mut f: F) -> Vec<T>
+    where
+        F: FnMut(usize, &Uuid, &Command) -> T,
+    {
+        self.items
+            .order
+            .iter()
+            .enumerate()
+            .filter_map(|(index, id)| self.items.items.get(id).map(|cmd| f(index, id, cmd)))
+            .collect()
+    }
+}
+
+#[cfg(test)]
+mod command_tests {
+    use crate::s;
+
+    use std::collections::HashMap;
+    use uuid::Uuid;
+
+    use super::{ActionKind, Command, CommandKind, Items, ShellCommandProperties};
+
+    #[test]
+    fn maps_over_items_to_extract_values() {
+        let command_a_uuid = Uuid::new_v4();
+        let command_b_uuid = Uuid::new_v4();
+
+        let command = Command {
+            value: s!("Commands"),
+            items: Items {
+                items: HashMap::from([
+                    (
+                        command_a_uuid,
+                        Command {
+                            value: s!("ls"),
+                            kind: CommandKind::SyncShellCommand(ShellCommandProperties {
+                                command: s!("ls"),
+                            }),
+                            action: ActionKind::Next,
+                            ..Command::default()
+                        },
+                    ),
+                    (
+                        command_b_uuid,
+                        Command {
+                            value: s!("pwd"),
+                            kind: CommandKind::SyncShellCommand(ShellCommandProperties {
+                                command: s!("pwd"),
+                            }),
+                            action: ActionKind::Exit,
+                            ..Command::default()
+                        },
+                    ),
+                ]),
+                order: vec![command_a_uuid, command_b_uuid],
+            },
+            ..Command::default()
+        };
+
+        let command_values = command.map_items(|_, _, cmd| cmd.value.clone());
+
+        assert_eq!(command_values, vec![s!("ls"), s!["pwd"]]);
+    }
+}
