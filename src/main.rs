@@ -6,7 +6,7 @@ use iced::widget::{
 use iced::window::{self, Level};
 use iced::{keyboard, Alignment, Padding};
 use iced::{Application, Element};
-use iced::{Command, Length, Settings, Size, Subscription};
+use iced::{Length, Settings, Size, Subscription};
 
 use once_cell::sync::Lazy;
 use uuid::Uuid;
@@ -94,7 +94,7 @@ impl Application for LoadingCommands {
         Theme::Dark
     }
 
-    fn new(_flags: ()) -> (LoadingCommands, Command<Message>) {
+    fn new(_flags: ()) -> (LoadingCommands, iced::Command<Message>) {
         let mode = Mode {
             kind: ModeKind::SyncShellCommand(mode::ShellCommandProperties {
                 command: String::from("ls"),
@@ -122,7 +122,7 @@ impl Application for LoadingCommands {
         "Iced Query".to_string()
     }
 
-    fn update(&mut self, message: Message) -> Command<Message> {
+    fn update(&mut self, message: Message) -> iced::Command<Message> {
         match self {
             LoadingCommands::Loading => {
                 #[allow(clippy::single_match)]
@@ -144,7 +144,7 @@ impl Application for LoadingCommands {
             LoadingCommands::Loaded(state) => match message {
                 Message::OnScroll(viewport) => {
                     state.scrollable_offset = viewport.absolute_offset();
-                    Command::none()
+                    iced::Command::none()
                 }
                 Message::InputChanged(value) => {
                     state.filtered_cmds = Some(state.mode.filter_by_value(&value));
@@ -213,7 +213,7 @@ impl Application for LoadingCommands {
                 }
                 Message::Exit => std::process::exit(0),
                 Message::ToggleFullscreen(mode) => window::change_mode(window::Id::MAIN, mode),
-                _ => Command::none(),
+                _ => iced::Command::none(),
             },
         }
     }
