@@ -86,6 +86,7 @@
                   pkgs.rust-analyzer-unwrapped
                   toolchain
                   cargo-watch
+                  pkgs.evcxr
                 ] ++ deps;
             };
         });
