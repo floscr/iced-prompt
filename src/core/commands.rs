@@ -6,6 +6,10 @@ use std::fmt;
 
 use uuid::Uuid;
 
+// Constants -------------------------------------------------------------------
+
+pub const SIMPLE_CMD_HEIGHT: f32 = 28.;
+
 // Types -----------------------------------------------------------------------
 
 #[derive(Deserialize, Default, Debug, Clone, Eq, PartialEq)]
@@ -201,6 +205,21 @@ impl Command {
         })
     }
 
+    pub fn index_of_item_with_id(&self, id: Uuid) -> Option<usize> {
+        self.items.order.iter().position(|&order_id| order_id == id)
+    }
+
+    pub fn get_child_command_by_index(&self, index: usize) -> Option<(Uuid, Command)> {
+        let id = self.items.order.get(index);
+
+        let item = id.and_then(|id| self.items.items.get(id).cloned());
+
+        match (id, item) {
+            (Some(id), Some(item)) => Some((id.clone(), item)),
+            _ => None,
+        }
+    }
+
     pub fn with_order(&self, order: Vec<Uuid>) -> Command {
         Command {
             items: Items {
@@ -209,6 +228,21 @@ impl Command {
             },
             ..self.clone()
         }
+    }
+
+    pub fn command_kind_height(&self) -> f32 {
+        match self.kind {
+            _ => SIMPLE_CMD_HEIGHT + 1.,
+        }
+    }
+
+    pub fn scroll_offset_at_index(&self, index: usize) -> f32 {
+        let ids = &self.items.order[..index];
+        let mut offset = 0.;
+        for id in ids {
+            offset += Command::command_kind_height(&self.items.items[id])
+        }
+        offset
     }
 }
 

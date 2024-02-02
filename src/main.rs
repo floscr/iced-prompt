@@ -56,6 +56,7 @@ enum LoadingState {
 struct State {
     input_value: String,
     history: History,
+    filter: Option<Vec<Uuid>>,
     mode: Mode,
     filtered_cmds: Option<FilteredItems>,
     selection: CommandSelection,
@@ -110,6 +111,15 @@ impl Application for LoadingState {
             }
         },
         "action": "Next"
+    },
+                {
+        "value": "pwd",
+        "kind": {
+            "SyncShellCommand": {
+                "command": "ls"
+            }
+        },
+        "action": "Next"
     }
 
     ]
@@ -156,45 +166,57 @@ impl Application for LoadingState {
                     iced::Command::none()
                 }
                 Message::InputChanged(value) => {
-                    state.filtered_cmds = Some(state.mode.filter_by_value(&value));
+                    state.filter = state
+                        .history
+                        .head()
+                        .map(|cmd| Command::filter_items_by_value(&cmd, &value));
                     state.input_value = value;
                     state.selection = CommandSelection::Initial;
 
                     scrollable::snap_to(SCROLLABLE_ID.clone(), RelativeOffset::START)
                 }
                 Message::Select(amount) => {
-                    let cmds = match &state.filtered_cmds {
-                        Some(filtered_cmds) => {
-                            state.mode.clone().with_filtered_order(filtered_cmds)
+                    let selected_command_and_index = match state.history.head() {
+                        Some(cmds) => {
+                            let filtered_cmds = match &state.filter {
+                                Some(order) => cmds.with_order(order.clone()),
+                                _ => cmds,
+                            };
+
+                            let selection_index: usize = match state.selection {
+                                CommandSelection::Initial => 0,
+                                CommandSelection::Selected(id) => {
+                                    let i = &filtered_cmds.index_of_item_with_id(id).unwrap_or(0);
+                                    *i
+                                }
+                            };
+
+                            // Shift the index by the given `amount`
+                            let cmds_len = &filtered_cmds.items.order.len();
+                            let next_index: usize =
+                                num::clamp(selection_index as i32 + amount, 0, *cmds_len as i32)
+                                    as usize;
+
+                            filtered_cmds
+                                .get_child_command_by_index(next_index)
+                                .map(|(id, cmd)| (id, next_index, cmd))
                         }
-                        None => state.mode.clone(),
+                        _ => None,
                     };
 
-                    let selection_index = match state.selection {
-                        CommandSelection::Initial => 0,
-                        CommandSelection::Selected(selected_id) => {
-                            cmds.order.iter().position(|&id| id == selected_id).unwrap()
-                        }
-                    };
-
-                    let next_index: usize =
-                        num::clamp(selection_index as i32 + amount, 0, cmds.order.len() as i32)
-                            as usize;
-
-                    let selected_cmd = cmds.get_by_index(next_index);
-
-                    let selection = match selected_cmd.clone() {
-                        Some(cmd) => CommandSelection::Selected(*Item::uuid(&cmd)),
+                    let next_selection = match &selected_command_and_index {
+                        Some((id, _, _)) => CommandSelection::Selected(*id),
                         None => CommandSelection::Initial,
                     };
+                    state.selection = next_selection;
 
-                    state.selection = selection;
+                    // iced::Command::none()
 
-                    match selected_cmd {
+                    match &selected_command_and_index {
                         None => scrollable::snap_to(SCROLLABLE_ID.clone(), RelativeOffset::START),
-                        Some(_) => {
+                        Some((_, idx, cmd)) => {
                             let scroll_offset =
-                                cmds.scroll_offset_at_index(next_index) - state.scrollable_offset.y;
+                                cmd.scroll_offset_at_index(*idx) - state.scrollable_offset.y;
                             scrollable::scroll_to(
                                 SCROLLABLE_ID.clone(),
                                 AbsoluteOffset {
@@ -206,19 +228,20 @@ impl Application for LoadingState {
                     }
                 }
                 Message::Submit => {
-                    let id = match state.selection {
-                        CommandSelection::Initial => Some(state.mode.order[0]),
-                        CommandSelection::Selected(selected_id) => Some(selected_id),
-                    };
+                    // let id = match state.selection {
+                    //     CommandSelection::Initial => Some(state.mode.order[0]),
+                    //     CommandSelection::Selected(selected_id) => Some(selected_id),
+                    // };
 
-                    match id.and_then(|id| state.mode.items.get(&id)) {
-                        Some(cmd) => {
-                            let value = mode::Item::value(cmd);
-                            println!("{}", value);
-                            std::process::exit(0)
-                        }
-                        _ => std::process::exit(1),
-                    }
+                    // match id.and_then(|id| state.mode.items.get(&id)) {
+                    //     Some(cmd) => {
+                    //         let value = mode::Item::value(cmd);
+                    //         println!("{}", value);
+                    //         std::process::exit(0)
+                    //     }
+                    //     _ => std::process::exit(1),
+                    // }
+                    iced::Command::none()
                 }
                 Message::Exit => std::process::exit(0),
                 Message::ToggleFullscreen(mode) => window::change_mode(window::Id::MAIN, mode),
@@ -239,45 +262,50 @@ impl Application for LoadingState {
         };
         let input_value = &state.input_value;
         let history = &state.history;
-
-        let old_cmds = match &state.filtered_cmds {
-            Some(filtered_cmds) => state.mode.clone().with_filtered_order(filtered_cmds),
-            None => state.mode.clone(),
-        };
+        let filter = &state.filter;
+        let selection = &state.selection;
 
         let current_cmds = history.head().unwrap_or_default();
 
-        let selection = &state.selection;
-
-        let filtered_items_len = old_cmds.order.len();
+        let filtered_items_len = filter
+            .clone()
+            .map(|x| x.len())
+            .unwrap_or(current_cmds.items.order.len());
 
         let items = current_cmds.map_filter_items(|i, id, cmd| {
             let value = &cmd.value;
-            let button_position = match i {
-                0 => ButtonPosition::Top,
-                _ if i == filtered_items_len - 1 => ButtonPosition::Bottom,
-                _ => ButtonPosition::Default,
-            };
 
-            let button_style = match (selection, i) {
-                (CommandSelection::Initial, 0) => Button::Focused(button_position),
-                (CommandSelection::Selected(selected_id), _) if selected_id == id => {
-                    Button::Focused(button_position)
-                }
-                _ => Button::Primary(button_position),
-            };
+            let matches_value = value.to_lowercase().contains(&input_value.to_lowercase());
 
-            Some((
-                *id,
-                button(
-                    container(text(value).line_height(1.25))
-                        .height(mode::SIMPLE_CMD_HEIGHT)
-                        .center_y(),
-                )
-                .style(button_style)
-                .width(Length::Fill)
-                .into(),
-            ))
+            if matches_value {
+                let button_position = match i {
+                    0 => ButtonPosition::Top,
+                    _ if i == filtered_items_len - 1 => ButtonPosition::Bottom,
+                    _ => ButtonPosition::Default,
+                };
+
+                let button_style = match (selection, i) {
+                    (CommandSelection::Initial, 0) => Button::Focused(button_position),
+                    (CommandSelection::Selected(selected_id), _) if selected_id == id => {
+                        Button::Focused(button_position)
+                    }
+                    _ => Button::Primary(button_position),
+                };
+
+                Some((
+                    *id,
+                    button(
+                        container(text(value).line_height(1.25))
+                            .height(mode::SIMPLE_CMD_HEIGHT)
+                            .center_y(),
+                    )
+                    .style(button_style)
+                    .width(Length::Fill)
+                    .into(),
+                ))
+            } else {
+                None
+            }
         });
 
         let cmds_column = keyed_column(items)
