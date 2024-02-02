@@ -204,19 +204,24 @@ impl Application for LoadingState {
                     }
                 }
                 Message::Submit => {
-                    // let id = match state.selection {
-                    //     CommandSelection::Initial => Some(state.mode.order[0]),
-                    //     CommandSelection::Selected(selected_id) => Some(selected_id),
-                    // };
+                    state.history.head().map(|cmds| {
+                        let id = match &state.selection {
+                            CommandSelection::Initial => cmds.items.order[0],
+                            CommandSelection::Selected(selected_id) => *selected_id,
+                        };
 
-                    // match id.and_then(|id| state.mode.items.get(&id)) {
-                    //     Some(cmd) => {
-                    //         let value = mode::Item::value(cmd);
-                    //         println!("{}", value);
-                    //         std::process::exit(0)
-                    //     }
-                    //     _ => std::process::exit(1),
-                    // }
+                        let command = cmds.items.items.get(&id);
+
+                        match command {
+                            Some(cmd) => {
+                                let value = &cmd.value;
+                                println!("{}", value);
+                                std::process::exit(0)
+                            }
+                            _ => std::process::exit(1),
+                        }
+                    });
+
                     iced::Command::none()
                 }
                 Message::Exit => std::process::exit(0),
