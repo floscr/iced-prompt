@@ -26,7 +26,7 @@ impl container::StyleSheet for ContainerStyle {
                 a: 0.55,
             })),
             border_radius: BorderRadius::from(APP_WINDOW_BORDER_RADIUS),
-            border_width: 1.0,
+            border_width: 0.5,
             border_color: Color {
                 r: 0.25,
                 g: 0.25,
@@ -156,9 +156,9 @@ impl rule::StyleSheet for Rule {
                 r: 1.,
                 g: 1.,
                 b: 1.,
-                a: 0.05,
+                a: 0.01,
             },
-            width: 1,
+            width: 0,
             radius: 0.0.into(),
             fill_mode: rule::FillMode::Full,
         }
