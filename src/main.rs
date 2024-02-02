@@ -15,9 +15,9 @@ mod core;
 mod gui;
 mod utils;
 
-use core::commands::{self, Command};
+use core::commands::Command;
 use core::history::History;
-use core::mode::{self, FilteredItems, Item, Mode, ModeKind, ShellCommandProperties};
+use core::mode::{self};
 use gui::style::DEFAULT_BORDER_RADIUS;
 
 static SCROLLABLE_ID: Lazy<scrollable::Id> = Lazy::new(scrollable::Id::unique);
@@ -57,15 +57,12 @@ struct State {
     input_value: String,
     history: History,
     filter: Option<Vec<Uuid>>,
-    mode: Mode,
-    filtered_cmds: Option<FilteredItems>,
     selection: CommandSelection,
     scrollable_offset: AbsoluteOffset,
 }
 
 #[derive(Debug, Clone)]
 enum Message {
-    IoLoaded(Option<PromptData>),
     InputChanged(String),
     ToggleFullscreen(window::Mode),
     Exit,
@@ -120,19 +117,15 @@ impl Application for LoadingState {
         match self {
             LoadingState::Loading => {
                 #[allow(clippy::single_match)]
-                match message {
-                    Message::IoLoaded(result) => {
-                        *self = match result {
-                            Some(data) => LoadingState::Loaded(State {
-                                mode: Mode::from_string(data.value),
-                                ..State::default()
-                            }),
-                            None => LoadingState::Loaded(State::default()),
-                        };
-                    }
-                    _ => {}
-                }
-
+                // match message {
+                //     Message::IoLoaded(result) => {
+                //         *self = match result {
+                //             Some(_data) => LoadingState::Loaded(State { ..State::default() }),
+                //             None => LoadingState::Loaded(State::default()),
+                //         };
+                //     }
+                //     _ => {}
+                // }
                 text_input::focus(INPUT_ID.clone())
             }
             LoadingState::Loaded(state) => match message {
@@ -204,7 +197,7 @@ impl Application for LoadingState {
                     }
                 }
                 Message::Submit => {
-                    state.history.head().map(|cmds| {
+                    if let Some(cmds) = state.history.head() {
                         let id = match &state.selection {
                             CommandSelection::Initial => cmds.items.order[0],
                             CommandSelection::Selected(selected_id) => *selected_id,
@@ -220,7 +213,7 @@ impl Application for LoadingState {
                             }
                             _ => std::process::exit(1),
                         }
-                    });
+                    }
 
                     iced::Command::none()
                 }
@@ -377,47 +370,4 @@ impl Application for LoadingState {
     fn style(&self) -> iced::theme::Application {
         iced::theme::Application::Custom(Box::new(ApplicationStyle {}))
     }
-}
-
-#[derive(Debug, Clone)]
-struct PromptData {
-    value: String,
-}
-
-impl PromptData {
-    async fn load() -> Option<PromptData> {
-        use async_std::io::ReadExt;
-
-        let mut buffer = String::new();
-
-        let bytes_read = async_std::io::stdin()
-            .read_to_string(&mut buffer)
-            .await
-            .ok()?;
-
-        if bytes_read > 0 {
-            Some(PromptData {
-                value: buffer.trim().to_string(),
-            })
-        } else {
-            None
-        }
-    }
-}
-
-fn filter_matches(items: &[mode::Item], substring: &str) -> Vec<mode::Item> {
-    items
-        .iter()
-        .filter_map(|cmd| {
-            let value = mode::Item::value(cmd);
-            let is_match = value.to_lowercase().contains(&substring.to_lowercase());
-
-            if is_match {
-                Some(cmd)
-            } else {
-                None
-            }
-        })
-        .cloned()
-        .collect()
 }
