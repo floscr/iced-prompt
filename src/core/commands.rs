@@ -231,9 +231,7 @@ impl Command {
     }
 
     pub fn command_kind_height(&self) -> f32 {
-        match self.kind {
-            _ => SIMPLE_CMD_HEIGHT + 1.,
-        }
+        SIMPLE_CMD_HEIGHT + 1.
     }
 
     pub fn scroll_offset_at_index(&self, index: usize) -> f32 {

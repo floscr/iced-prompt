@@ -15,9 +15,8 @@ mod core;
 mod gui;
 mod utils;
 
-use core::commands::Command;
+use core::commands::{Command, SIMPLE_CMD_HEIGHT};
 use core::history::History;
-use core::mode::{self};
 use gui::style::DEFAULT_BORDER_RADIUS;
 
 static SCROLLABLE_ID: Lazy<scrollable::Id> = Lazy::new(scrollable::Id::unique);
@@ -270,7 +269,7 @@ impl Application for LoadingState {
                     *id,
                     button(
                         container(text(value).line_height(1.25))
-                            .height(mode::SIMPLE_CMD_HEIGHT)
+                            .height(SIMPLE_CMD_HEIGHT)
                             .center_y(),
                     )
                     .style(button_style)
