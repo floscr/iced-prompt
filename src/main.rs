@@ -98,32 +98,7 @@ impl Application for LoadingState {
     }
 
     fn new(_flags: ()) -> (LoadingState, iced::Command<Message>) {
-        let data = r#"{
-    "value": "Commands",
-    "kind": "Initial",
-    "action": "Exit",
-    "items": [
-        {
-        "value": "ls",
-        "kind": {
-            "SyncShellCommand": {
-                "command": "ls"
-            }
-        },
-        "action": "Next"
-    },
-                {
-        "value": "pwd",
-        "kind": {
-            "SyncShellCommand": {
-                "command": "ls"
-            }
-        },
-        "action": "Next"
-    }
-
-    ]
-}"#;
+        let data = include_str!("../data/nested_simple.json");
 
         let cmd: Command = serde_json::from_str(data).unwrap();
 

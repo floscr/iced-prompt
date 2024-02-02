@@ -1,0 +1,286 @@
+{
+  "value": "Commands",
+  "kind": "Initial",
+  "action": "Exit",
+  "items": [
+    {
+      "value": "ls",
+      "kind": {
+        "SyncShellCommand": {
+          "command": "ls"
+        }
+      },
+      "action": "Next"
+    },
+    {
+      "value": "ls",
+      "kind": {
+        "SyncShellCommand": {
+          "command": "ls"
+        }
+      },
+      "action": "Next"
+    },
+    {
+      "value": "ls",
+      "kind": {
+        "SyncShellCommand": {
+          "command": "ls"
+        }
+      },
+      "action": "Next"
+    },
+    {
+      "value": "ls",
+      "kind": {
+        "SyncShellCommand": {
+          "command": "ls"
+        }
+      },
+      "action": "Next"
+    },
+    {
+      "value": "ls",
+      "kind": {
+        "SyncShellCommand": {
+          "command": "ls"
+        }
+      },
+      "action": "Next"
+    },
+    {
+      "value": "ls",
+      "kind": {
+        "SyncShellCommand": {
+          "command": "ls"
+        }
+      },
+      "action": "Next"
+    },
+    {
+      "value": "ls",
+      "kind": {
+        "SyncShellCommand": {
+          "command": "ls"
+        }
+      },
+      "action": "Next"
+    },
+    {
+      "value": "ls",
+      "kind": {
+        "SyncShellCommand": {
+          "command": "ls"
+        }
+      },
+      "action": "Next"
+    },
+    {
+      "value": "ls",
+      "kind": {
+        "SyncShellCommand": {
+          "command": "ls"
+        }
+      },
+      "action": "Next"
+    },
+    {
+      "value": "ls",
+      "kind": {
+        "SyncShellCommand": {
+          "command": "ls"
+        }
+      },
+      "action": "Next"
+    },
+    {
+      "value": "ls",
+      "kind": {
+        "SyncShellCommand": {
+          "command": "ls"
+        }
+      },
+      "action": "Next"
+    },
+    {
+      "value": "ls",
+      "kind": {
+        "SyncShellCommand": {
+          "command": "ls"
+        }
+      },
+      "action": "Next"
+    },
+    {
+      "value": "ls",
+      "kind": {
+        "SyncShellCommand": {
+          "command": "ls"
+        }
+      },
+      "action": "Next"
+    },
+    {
+      "value": "ls",
+      "kind": {
+        "SyncShellCommand": {
+          "command": "ls"
+        }
+      },
+      "action": "Next"
+    },
+    {
+      "value": "ls",
+      "kind": {
+        "SyncShellCommand": {
+          "command": "ls"
+        }
+      },
+      "action": "Next"
+    },
+    {
+      "value": "ls",
+      "kind": {
+        "SyncShellCommand": {
+          "command": "ls"
+        }
+      },
+      "action": "Next"
+    },
+    {
+      "value": "ls",
+      "kind": {
+        "SyncShellCommand": {
+          "command": "ls"
+        }
+      },
+      "action": "Next"
+    },
+    {
+      "value": "ls",
+      "kind": {
+        "SyncShellCommand": {
+          "command": "ls"
+        }
+      },
+      "action": "Next"
+    },
+    {
+      "value": "ls",
+      "kind": {
+        "SyncShellCommand": {
+          "command": "ls"
+        }
+      },
+      "action": "Next"
+    },
+    {
+      "value": "ls",
+      "kind": {
+        "SyncShellCommand": {
+          "command": "ls"
+        }
+      },
+      "action": "Next"
+    },
+    {
+      "value": "ls",
+      "kind": {
+        "SyncShellCommand": {
+          "command": "ls"
+        }
+      },
+      "action": "Next"
+    },
+    {
+      "value": "ls",
+      "kind": {
+        "SyncShellCommand": {
+          "command": "ls"
+        }
+      },
+      "action": "Next"
+    },
+    {
+      "value": "ls",
+      "kind": {
+        "SyncShellCommand": {
+          "command": "ls"
+        }
+      },
+      "action": "Next"
+    },
+    {
+      "value": "ls",
+      "kind": {
+        "SyncShellCommand": {
+          "command": "ls"
+        }
+      },
+      "action": "Next"
+    },
+    {
+      "value": "ls",
+      "kind": {
+        "SyncShellCommand": {
+          "command": "ls"
+        }
+      },
+      "action": "Next"
+    },
+    {
+      "value": "ls",
+      "kind": {
+        "SyncShellCommand": {
+          "command": "ls"
+        }
+      },
+      "action": "Next"
+    },
+    {
+      "value": "ls",
+      "kind": {
+        "SyncShellCommand": {
+          "command": "ls"
+        }
+      },
+      "action": "Next"
+    },
+    {
+      "value": "ls",
+      "kind": {
+        "SyncShellCommand": {
+          "command": "ls"
+        }
+      },
+      "action": "Next"
+    },
+    {
+      "value": "ls",
+      "kind": {
+        "SyncShellCommand": {
+          "command": "ls"
+        }
+      },
+      "action": "Next"
+    },
+    {
+      "value": "ls",
+      "kind": {
+        "SyncShellCommand": {
+          "command": "ls"
+        }
+      },
+      "action": "Next"
+    },
+    {
+      "value": "ls",
+      "kind": {
+        "SyncShellCommand": {
+          "command": "ls"
+        }
+      },
+      "action": "Next"
+    }
+  ]
+}
