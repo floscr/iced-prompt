@@ -197,31 +197,32 @@ impl Application for LoadingState {
                                 num::clamp(selection_index as i32 + amount, 0, *cmds_len as i32)
                                     as usize;
 
+                            let scroll_offset = filtered_cmds.scroll_offset_at_index(next_index);
+
                             filtered_cmds
                                 .get_child_command_by_index(next_index)
-                                .map(|(id, cmd)| (id, next_index, cmd))
+                                .map(|(id, _)| (id, scroll_offset))
                         }
                         _ => None,
                     };
 
                     let next_selection = match &selected_command_and_index {
-                        Some((id, _, _)) => CommandSelection::Selected(*id),
+                        Some((id, _)) => CommandSelection::Selected(*id),
                         None => CommandSelection::Initial,
                     };
-                    state.selection = next_selection;
 
-                    // iced::Command::none()
+                    state.selection = next_selection;
 
                     match &selected_command_and_index {
                         None => scrollable::snap_to(SCROLLABLE_ID.clone(), RelativeOffset::START),
-                        Some((_, idx, cmd)) => {
-                            let scroll_offset =
-                                cmd.scroll_offset_at_index(*idx) - state.scrollable_offset.y;
+                        Some((_, scroll_offset)) => {
+                            let next_scroll_offset = scroll_offset - state.scrollable_offset.y;
+
                             scrollable::scroll_to(
                                 SCROLLABLE_ID.clone(),
                                 AbsoluteOffset {
                                     x: 0.0,
-                                    y: scroll_offset,
+                                    y: next_scroll_offset,
                                 },
                             )
                         }

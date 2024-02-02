@@ -198,7 +198,7 @@ impl Command {
                 .to_lowercase()
                 .contains(&substring.to_lowercase());
             if matches_value {
-                Some(id.clone())
+                Some(*id)
             } else {
                 None
             }
@@ -215,7 +215,7 @@ impl Command {
         let item = id.and_then(|id| self.items.items.get(id).cloned());
 
         match (id, item) {
-            (Some(id), Some(item)) => Some((id.clone(), item)),
+            (Some(id), Some(item)) => Some((*id, item)),
             _ => None,
         }
     }
@@ -240,7 +240,12 @@ impl Command {
         let ids = &self.items.order[..index];
         let mut offset = 0.;
         for id in ids {
-            offset += Command::command_kind_height(&self.items.items[id])
+            offset += &self
+                .items
+                .items
+                .get(id)
+                .map(Command::command_kind_height)
+                .unwrap_or(0.)
         }
         offset
     }
