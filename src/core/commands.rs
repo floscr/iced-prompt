@@ -200,6 +200,16 @@ impl Command {
             }
         })
     }
+
+    pub fn with_order(&self, order: Vec<Uuid>) -> Command {
+        Command {
+            items: Items {
+                order,
+                ..self.items.clone()
+            },
+            ..self.clone()
+        }
+    }
 }
 
 #[cfg(test)]
