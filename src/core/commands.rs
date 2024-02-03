@@ -149,11 +149,8 @@ mod deserialize_tests {
 
         assert_eq!(v.value, "Commands");
         assert_eq!(v.items.order.len(), 1);
-        let first_item = v.items.order[0];
-        assert_eq!(
-            v.items.items.get(&first_item).unwrap().value,
-            "List files: ~"
-        );
+        let (_, cmd) = v.get_child_command_by_index(0).unwrap();
+        assert_eq!(cmd.value, "List files: ~");
     }
 
     #[test]
