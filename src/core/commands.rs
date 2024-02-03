@@ -109,6 +109,16 @@ mod type_tests {
 
 // Deserialization -------------------------------------------------------------
 
+fn parse_command_or_exit(json_str: &str) -> Option<Command> {
+    match serde_json::from_str(json_str) {
+        Ok(cmd) => Some(cmd),
+        Err(err) => {
+            println!("{:#?}", err);
+            std::process::exit(1);
+        }
+    }
+}
+
 impl<'de> Deserialize<'de> for CommandKind {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -199,8 +209,8 @@ impl<'de> Deserialize<'de> for Items<Command> {
 
 #[cfg(test)]
 mod deserialize_tests {
-
-    use super::Command;
+    use super::{Command, CommandKind, ShellCommandProperties};
+    use crate::s;
 
     #[test]
     fn deserializes_system_types_json() {
@@ -371,6 +381,29 @@ impl Command {
         match self.items.items.get(&id) {
             Some(cmd) => cmd.execute(),
             None => Result::Err(CommandResultError::IdNotFound(id)),
+        }
+    }
+
+    pub fn execute_action(&self) -> Option<Command> {
+        let result = self.execute();
+
+        match &self.action {
+            ActionKind::Exit => {
+                match result {
+                    Ok(output) => std::process::exit(0),
+                    Err(err) => {
+                        println!("{:#?}", err);
+                        std::process::exit(1);
+                    }
+                };
+            }
+            ActionKind::Next => {
+                if let Ok(json_str) = result {
+                    parse_command_or_exit(&json_str)
+                } else {
+                    std::process::exit(1);
+                }
+            }
         }
     }
 }

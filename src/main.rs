@@ -94,7 +94,7 @@ impl Application for LoadingState {
     }
 
     fn new(_flags: ()) -> (LoadingState, iced::Command<Message>) {
-        let data = include_str!("../data/system_types_simple.json");
+        let data = include_str!("../data/user_friendly_simple.json");
 
         let cmd: Command = serde_json::from_str(data).unwrap();
 
@@ -196,19 +196,20 @@ impl Application for LoadingState {
                     }
                 }
                 Message::Submit => {
-                    if let Some(cmds) = state.history.head() {
+                    let history = &state.history;
+
+                    if let Some(cmds) = &history.head() {
                         let id = match &state.selection {
                             CommandSelection::Initial => cmds.items.order[0],
                             CommandSelection::Selected(selected_id) => *selected_id,
                         };
 
                         let command = cmds.items.items.get(&id);
+                        let result = command.and_then(Command::execute_action);
 
-                        match command {
+                        match result {
                             Some(cmd) => {
-                                let value = &cmd.value;
-                                println!("{}", value);
-                                std::process::exit(0)
+                                state.history = history.clone().push(cmd);
                             }
                             _ => std::process::exit(1),
                         }
