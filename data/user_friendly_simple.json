@@ -3,7 +3,7 @@
   "items": [
     {
       "value": "List files: ~",
-      "shell": "ls ~",
+      "shell": "bb ./scripts/src/file_explorer.clj ~",
       "action": "next"
     }
   ]

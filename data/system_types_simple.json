@@ -5,7 +5,7 @@
       "value": "List files: ~",
       "kind": {
         "SyncShellCommand": {
-          "command": "ls ~"
+          "command": "bb ./scripts/src/file_explorer.clj ~"
         }
       },
       "action": "Next"
