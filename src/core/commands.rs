@@ -143,30 +143,17 @@ mod deserialize_tests {
 
     #[test]
     fn deserializes_nested_command() {
-        let data = r#"{
-    "value": "Commands",
-    "kind": "Initial",
-    "action": "Exit",
-    "items": [
-        {
-        "value": "ls",
-        "kind": {
-            "SyncShellCommand": {
-                "command": "ls"
-            }
-        },
-        "action": "Next"
-    }
-
-    ]
-}"#;
+        let data = include_str!("../../data/nested_simple.json");
 
         let v: Command = serde_json::from_str(data).unwrap();
 
-        println!("{:#?}", v);
-
         assert_eq!(v.value, "Commands");
         assert_eq!(v.items.order.len(), 1);
+        let first_item = v.items.order[0];
+        assert_eq!(
+            v.items.items.get(&first_item).unwrap().value,
+            "List files: ~"
+        );
     }
 
     #[test]
