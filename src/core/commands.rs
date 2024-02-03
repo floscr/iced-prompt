@@ -3,6 +3,7 @@ use std::process;
 
 use serde::de::{Deserializer, MapAccess, SeqAccess, Visitor};
 use serde::Deserialize;
+use serde_json::Value;
 use std::fmt::{self, format};
 
 use uuid::Uuid;
@@ -51,7 +52,7 @@ pub enum ActionKind {
 #[derive(Deserialize, Default, Debug, Clone, Eq, PartialEq)]
 pub struct Command {
     pub value: String,
-    #[serde(default, deserialize_with = "deserialize_kind")]
+    #[serde(default, alias = "shell", deserialize_with = "deserialize_kind")]
     pub kind: CommandKind,
     #[serde(default)]
     pub action: ActionKind,
@@ -151,13 +152,12 @@ fn deserialize_kind<'de, D>(deserializer: D) -> Result<CommandKind, D::Error>
 where
     D: Deserializer<'de>,
 {
-    let map: serde_json::Value = Deserialize::deserialize(deserializer)?;
-    if let Some(shell_command) = map.get("shell").and_then(|v| v.as_str()) {
-        Ok(CommandKind::SyncShellCommand(ShellCommandProperties {
-            command: shell_command.to_string(),
-        }))
-    } else {
-        Ok(CommandKind::Initial)
+    let obj = Value::deserialize(deserializer)?;
+    match obj {
+        Value::String(shell_string) => Ok(CommandKind::SyncShellCommand(ShellCommandProperties {
+            command: shell_string.to_owned(),
+        })),
+        _ => Ok(CommandKind::Initial),
     }
 }
 
