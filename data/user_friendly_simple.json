@@ -4,7 +4,7 @@
     {
       "value": "List files: ~",
       "shell": "ls ~",
-      "action": "Next"
+      "action": "next"
     }
   ]
 }

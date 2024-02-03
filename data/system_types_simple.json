@@ -1,7 +1,7 @@
 {
   "value": "Commands",
   "kind": "Initial",
-  "action": "Exit",
+  "action": "exit",
   "items": [
     {
       "value": "List files: ~",
@@ -10,7 +10,7 @@
           "command": "ls ~"
         }
       },
-      "action": "Next"
+      "action": "next"
     }
   ]
 }
