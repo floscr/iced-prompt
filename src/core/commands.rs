@@ -50,6 +50,7 @@ pub struct Command {
     #[serde(default, deserialize_with = "Items::deserialize")]
     pub items: Items<Command>,
 }
+
 #[cfg(test)]
 mod type_tests {
     use crate::s;
