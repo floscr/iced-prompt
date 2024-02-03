@@ -224,6 +224,12 @@ mod deserialize_tests {
         assert_eq!(v.items.order.len(), 1);
         let (_, cmd) = v.get_child_command_by_index(0).unwrap();
         assert_eq!(cmd.value, "List files: ~");
+        assert_eq!(
+            cmd.kind,
+            CommandKind::SyncShellCommand(ShellCommandProperties {
+                command: s!("bb ./scripts/src/file_explorer.clj ~")
+            })
+        );
     }
 
     #[test]
