@@ -165,6 +165,7 @@ mod deserialize_tests {
         let v: Command = serde_json::from_str(data).unwrap();
 
         assert_eq!(v.value, "Commands");
+        assert_eq!(v.items.order.len(), 0);
     }
 }
 
