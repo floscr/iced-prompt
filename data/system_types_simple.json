@@ -1,6 +1,5 @@
 {
   "value": "Commands",
-  "action": "Exit",
   "items": [
     {
       "value": "List files: ~",
