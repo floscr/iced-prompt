@@ -34,9 +34,9 @@ pub struct Items<T> {
 #[derive(Deserialize, Debug, Default, Clone, Eq, PartialEq)]
 pub enum ActionKind {
     #[default]
-    #[serde(rename = "exit")]
+    #[serde(alias = "exit")]
     Exit,
-    #[serde(rename = "next")]
+    #[serde(alias = "next")]
     Next,
 }
 

@@ -1,6 +1,6 @@
 {
   "value": "Commands",
-  "action": "exit",
+  "action": "Exit",
   "items": [
     {
       "value": "List files: ~",
@@ -9,7 +9,7 @@
           "command": "ls ~"
         }
       },
-      "action": "next"
+      "action": "Next"
     }
   ]
 }
