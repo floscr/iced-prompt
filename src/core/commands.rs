@@ -48,45 +48,6 @@ pub struct Command {
     #[serde(default, deserialize_with = "Items::deserialize")]
     pub items: Items<Command>,
 }
-
-// Deserialization -------------------------------------------------------------
-
-// Deserialize items from a flat array to Items<Command>
-impl<'de> Deserialize<'de> for Items<Command> {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        struct ItemsVisitor;
-
-        impl<'de> Visitor<'de> for ItemsVisitor {
-            type Value = Items<Command>;
-
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                formatter.write_str("an array of commands")
-            }
-
-            fn visit_seq<A>(self, mut seq: A) -> Result<Items<Command>, A::Error>
-            where
-                A: SeqAccess<'de>,
-            {
-                let mut items = HashMap::new();
-                let mut order = Vec::new();
-
-                while let Some(command) = seq.next_element::<Command>()? {
-                    let uuid = Uuid::new_v4(); // Generate a new UUID for each item
-                    order.push(uuid);
-                    items.insert(uuid, command);
-                }
-
-                Ok(Items { items, order })
-            }
-        }
-
-        deserializer.deserialize_seq(ItemsVisitor)
-    }
-}
-
 #[cfg(test)]
 mod type_tests {
     use crate::s;
@@ -132,6 +93,53 @@ mod type_tests {
         };
         assert_eq!(command.value, "Commands");
     }
+}
+
+// Deserialization -------------------------------------------------------------
+
+// Deserialize items from a flat array to Items<Command>
+impl<'de> Deserialize<'de> for Items<Command> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct ItemsVisitor;
+
+        impl<'de> Visitor<'de> for ItemsVisitor {
+            type Value = Items<Command>;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                formatter.write_str("an array of commands")
+            }
+
+            fn visit_seq<A>(self, mut seq: A) -> Result<Items<Command>, A::Error>
+            where
+                A: SeqAccess<'de>,
+            {
+                let mut items = HashMap::new();
+                let mut order = Vec::new();
+
+                while let Some(command) = seq.next_element::<Command>()? {
+                    let uuid = Uuid::new_v4(); // Generate a new UUID for each item
+                    order.push(uuid);
+                    items.insert(uuid, command);
+                }
+
+                Ok(Items { items, order })
+            }
+        }
+
+        deserializer.deserialize_seq(ItemsVisitor)
+    }
+}
+
+#[cfg(test)]
+mod deserialize_tests {
+    use crate::s;
+    use std::collections::HashMap;
+    use uuid::Uuid;
+
+    use super::{ActionKind, Command, CommandKind, Items, ShellCommandProperties};
 
     #[test]
     fn deserializes_nested_command() {
