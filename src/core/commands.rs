@@ -138,7 +138,7 @@ impl<'de> Deserialize<'de> for CommandKind {
 }
 
 // Deserialize kind from a simple value:
-// "shell": "ls" -> CommandKind::SyncShellCommand { command: "ls" }
+// {"shell": "ls"} -> CommandKind::SyncShellCommand { command: "ls" }
 fn deserialize_kind<'de, D>(deserializer: D) -> Result<CommandKind, D::Error>
 where
     D: Deserializer<'de>,
