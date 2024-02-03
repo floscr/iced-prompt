@@ -15,7 +15,7 @@
                         value (fs/file-name cur)
                         item (if dir?
                                {:value value
-                                :shell (str "bb file_explorer " cur)
+                                :shell (str "bb ./scripts/src/file_explorer.clj " cur)
                                 :action "Next"}
                                {:value value
                                 :action "Exit"})]
@@ -27,6 +27,7 @@
                 entries)
         items (concat (sort-by :value dirs) (sort-by :value files))]
     {:value (str "List files: " path)
+     :shell (str "bb ./scripts/src/file_explorer.clj " path)
      :items items}))
 
 ;; Commands --------------------------------------------------------------------
