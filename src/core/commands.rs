@@ -26,6 +26,7 @@ pub enum CommandKind {
     // Error(CommandError),
 }
 
+#[derive(Debug)]
 pub enum CommandResultError {
     IdNotFound(Uuid),
     FailedWithCode(String, i32),
@@ -256,7 +257,14 @@ impl CommandKind {
             Ok(output) => {
                 match output.status.code() {
                     // Success
-                    Some(0) => Ok(String::from_utf8_lossy(&output.stdout).to_string()),
+                    Some(0) => {
+                        let result = String::from_utf8_lossy(&output.stdout)
+                            .to_string()
+                            .trim_end()
+                            .to_string();
+
+                        Ok(result)
+                    }
                     // Failed with specific code
                     Some(code) => Err(CommandResultError::FailedWithCode(
                         String::from_utf8_lossy(&output.stderr).to_string(),
@@ -344,14 +352,18 @@ impl Command {
         offset
     }
 
-    pub fn execute(&self, id: Uuid) -> Result<String, CommandResultError> {
+    pub fn execute(&self) -> Result<String, CommandResultError> {
+        match &self.kind {
+            CommandKind::Initial => Ok(self.value.clone()),
+            CommandKind::SyncShellCommand(shell_command) => {
+                CommandKind::sync_execute(shell_command.clone())
+            }
+        }
+    }
+
+    pub fn execute_child(&self, id: Uuid) -> Result<String, CommandResultError> {
         match self.items.items.get(&id) {
-            Some(cmd) => match &cmd.kind {
-                CommandKind::Initial => Ok(self.value.clone()),
-                CommandKind::SyncShellCommand(shell_command) => {
-                    CommandKind::sync_execute(shell_command.clone())
-                }
-            },
+            Some(cmd) => cmd.execute(),
             None => Result::Err(CommandResultError::IdNotFound(id)),
         }
     }
@@ -396,6 +408,17 @@ mod command_tests {
                             ..Command::default()
                         },
                     ),
+                    (
+                        command_b_uuid,
+                        Command {
+                            value: s!("pwd"),
+                            kind: CommandKind::SyncShellCommand(ShellCommandProperties {
+                                command: s!("pwd"),
+                            }),
+                            action: ActionKind::Exit,
+                            ..Command::default()
+                        },
+                    ),
                 ]),
                 order: vec![command_a_uuid, command_b_uuid],
             },
@@ -421,5 +444,22 @@ mod command_tests {
 
         assert_eq!(command_values.len(), 1);
         assert_eq!(command_values[0], target_uuid.clone());
+    }
+
+    #[test]
+    fn execute_successful_command() {
+        let command = Command {
+            value: s!("Success"),
+            kind: CommandKind::SyncShellCommand(ShellCommandProperties {
+                command: s!("echo \"Success\""),
+            }),
+            ..Command::default()
+        };
+
+        let result = command.execute();
+        assert!(result.is_ok());
+
+        let value = result.unwrap();
+        assert_eq!(value, "Success");
     }
 }
