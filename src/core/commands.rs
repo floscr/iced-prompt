@@ -204,6 +204,18 @@ mod deserialize_tests {
     }
 
     #[test]
+    fn deserializes_user_friendly_json() {
+        let data = include_str!("../../data/user_friendly_simple.json");
+
+        let v: Command = serde_json::from_str(data).unwrap();
+
+        assert_eq!(v.value, "Commands");
+        assert_eq!(v.items.order.len(), 1);
+        let (_, cmd) = v.get_child_command_by_index(0).unwrap();
+        assert_eq!(cmd.value, "List files: ~");
+    }
+
+    #[test]
     fn deserialize_command_with_defaults() {
         let data = r#"{
     "type": "Command",
