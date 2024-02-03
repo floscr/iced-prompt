@@ -1,8 +1,9 @@
 use std::collections::HashMap;
+use std::process;
 
 use serde::de::{Deserializer, MapAccess, SeqAccess, Visitor};
 use serde::Deserialize;
-use std::fmt;
+use std::fmt::{self, format};
 
 use uuid::Uuid;
 
@@ -23,6 +24,12 @@ pub enum CommandKind {
     Initial,
     SyncShellCommand(ShellCommandProperties),
     // Error(CommandError),
+}
+
+pub enum CommandResultError {
+    IdNotFound(Uuid),
+    FailedWithCode(String, i32),
+    ExecutionFailed(String),
 }
 
 #[derive(Debug, Default, Clone, Eq, PartialEq)]
@@ -236,6 +243,37 @@ mod deserialize_tests {
 
 // Impl ------------------------------------------------------------------------
 
+impl CommandKind {
+    pub fn sync_execute(
+        shell_command: ShellCommandProperties,
+    ) -> Result<String, CommandResultError> {
+        let output = process::Command::new("sh")
+            .arg("-c")
+            .arg(shell_command.command)
+            .output();
+
+        match output {
+            Ok(output) => {
+                match output.status.code() {
+                    // Success
+                    Some(0) => Ok(String::from_utf8_lossy(&output.stdout).to_string()),
+                    // Failed with specific code
+                    Some(code) => Err(CommandResultError::FailedWithCode(
+                        String::from_utf8_lossy(&output.stderr).to_string(),
+                        code,
+                    )),
+                    // Process terminated by a signal
+                    None => Err(CommandResultError::ExecutionFailed(
+                        "Command terminated by signal".to_string(),
+                    )),
+                }
+            }
+            // Some other error
+            Err(e) => Err(CommandResultError::ExecutionFailed(e.to_string())),
+        }
+    }
+}
+
 impl Command {
     pub fn map_filter_items<F, T>(&self, mut f: F) -> Vec<T>
     where
@@ -304,6 +342,18 @@ impl Command {
                 .unwrap_or(0.)
         }
         offset
+    }
+
+    pub fn execute(&self, id: Uuid) -> Result<String, CommandResultError> {
+        match self.items.items.get(&id) {
+            Some(cmd) => match &cmd.kind {
+                CommandKind::Initial => Ok(self.value.clone()),
+                CommandKind::SyncShellCommand(shell_command) => {
+                    CommandKind::sync_execute(shell_command.clone())
+                }
+            },
+            None => Result::Err(CommandResultError::IdNotFound(id)),
+        }
     }
 }
 
