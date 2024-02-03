@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use serde::de::{Deserializer, SeqAccess, Visitor};
+use serde::de::{Deserializer, MapAccess, SeqAccess, Visitor};
 use serde::Deserialize;
 use std::fmt;
 
@@ -17,7 +17,7 @@ pub struct ShellCommandProperties {
     pub command: String,
 }
 
-#[derive(Deserialize, Debug, Default, Clone, Eq, PartialEq)]
+#[derive(Debug, Default, Clone, Eq, PartialEq)]
 pub enum CommandKind {
     #[default]
     Initial,
@@ -41,7 +41,7 @@ pub enum ActionKind {
 #[derive(Deserialize, Default, Debug, Clone, Eq, PartialEq)]
 pub struct Command {
     pub value: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "deserialize_kind")]
     pub kind: CommandKind,
     #[serde(default)]
     pub action: ActionKind,
@@ -97,6 +97,59 @@ mod type_tests {
 
 // Deserialization -------------------------------------------------------------
 
+impl<'de> Deserialize<'de> for CommandKind {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct CommandKindVisitor;
+
+        impl<'de> Visitor<'de> for CommandKindVisitor {
+            type Value = CommandKind;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                formatter.write_str("a valid CommandKind")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> Result<CommandKind, V::Error>
+            where
+                V: MapAccess<'de>,
+            {
+                let mut shell_command = None;
+                while let Some(key) = map.next_key::<String>()? {
+                    if key == "shell" {
+                        let command: String = map.next_value()?;
+                        shell_command = Some(ShellCommandProperties { command });
+                    } else {
+                        let _: serde::de::IgnoredAny = map.next_value()?;
+                    }
+                }
+
+                Ok(shell_command.map_or(CommandKind::Initial, CommandKind::SyncShellCommand))
+            }
+        }
+
+        const FIELDS: &[&str] = &["shell"];
+        deserializer.deserialize_struct("CommandKind", FIELDS, CommandKindVisitor)
+    }
+}
+
+// Deserialize kind from a simple value:
+// "shell": "ls" -> CommandKind::SyncShellCommand { command: "ls" }
+fn deserialize_kind<'de, D>(deserializer: D) -> Result<CommandKind, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let map: serde_json::Value = Deserialize::deserialize(deserializer)?;
+    if let Some(shell_command) = map.get("shell").and_then(|v| v.as_str()) {
+        Ok(CommandKind::SyncShellCommand(ShellCommandProperties {
+            command: shell_command.to_string(),
+        }))
+    } else {
+        Ok(CommandKind::Initial)
+    }
+}
+
 // Deserialize items from a flat array to Items<Command>
 impl<'de> Deserialize<'de> for Items<Command> {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
@@ -135,15 +188,12 @@ impl<'de> Deserialize<'de> for Items<Command> {
 
 #[cfg(test)]
 mod deserialize_tests {
-    use crate::s;
-    use std::collections::HashMap;
-    use uuid::Uuid;
 
-    use super::{ActionKind, Command, CommandKind, Items, ShellCommandProperties};
+    use super::Command;
 
     #[test]
-    fn deserializes_nested_command() {
-        let data = include_str!("../../data/nested_simple.json");
+    fn deserializes_system_types_json() {
+        let data = include_str!("../../data/system_types_simple.json");
 
         let v: Command = serde_json::from_str(data).unwrap();
 
@@ -154,7 +204,7 @@ mod deserialize_tests {
     }
 
     #[test]
-    fn deserialize_simple_command_with_defaults() {
+    fn deserialize_command_with_defaults() {
         let data = r#"{
     "type": "Command",
     "value": "Commands",

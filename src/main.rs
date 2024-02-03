@@ -94,7 +94,7 @@ impl Application for LoadingState {
     }
 
     fn new(_flags: ()) -> (LoadingState, iced::Command<Message>) {
-        let data = include_str!("../data/nested_simple.json");
+        let data = include_str!("../data/system_types_simple.json");
 
         let cmd: Command = serde_json::from_str(data).unwrap();
 

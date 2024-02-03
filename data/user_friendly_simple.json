@@ -1,0 +1,16 @@
+{
+  "value": "Commands",
+  "kind": "Initial",
+  "action": "Exit",
+  "items": [
+    {
+      "value": "List files: ~",
+      "kind": {
+        "SyncShellCommand": {
+          "command": "ls ~"
+        }
+      },
+      "action": "Next"
+    }
+  ]
+}
