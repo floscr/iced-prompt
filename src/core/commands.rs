@@ -26,7 +26,7 @@ pub enum CommandKind {
     // Error(CommandError),
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum CommandResultError {
     IdNotFound(Uuid),
     FailedWithCode(String, i32),
@@ -376,7 +376,9 @@ mod command_tests {
     use std::collections::HashMap;
     use uuid::Uuid;
 
-    use super::{ActionKind, Command, CommandKind, Items, ShellCommandProperties};
+    use super::{
+        ActionKind, Command, CommandKind, CommandResultError, Items, ShellCommandProperties,
+    };
 
     fn make_test_command() -> Command {
         let command_a_uuid = Uuid::new_v4();
@@ -461,5 +463,22 @@ mod command_tests {
 
         let value = result.unwrap();
         assert_eq!(value, "Success");
+    }
+
+    fn execute_failing_command() {
+        let command = Command {
+            value: s!("Fail"),
+            kind: CommandKind::SyncShellCommand(ShellCommandProperties {
+                command: s!("echo \"Fail\"; exit 1"),
+            }),
+            ..Command::default()
+        };
+
+        let result = command.execute();
+        assert!(result.is_err());
+
+        let error = result.unwrap_err();
+        let expected_error = CommandResultError::FailedWithCode(String::from("Fail\n"), 1);
+        assert_eq!(error, expected_error);
     }
 }
