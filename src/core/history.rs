@@ -20,6 +20,16 @@ impl History {
         History { history: cmds_list }
     }
 
+    pub fn pop_with_minimum(self) -> History {
+        if self.history.len() != 1 {
+            let mut cmds_list = self.history.clone();
+            cmds_list.pop();
+            History { history: cmds_list }
+        } else {
+            self
+        }
+    }
+
     pub fn head(&self) -> Option<Command> {
         let mut cmds_list = self.history.clone();
         cmds_list.pop()

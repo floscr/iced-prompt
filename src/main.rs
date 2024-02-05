@@ -1,3 +1,5 @@
+use async_std::{print, println};
+use iced::keyboard::KeyCode;
 use iced::theme::Theme;
 use iced::widget::scrollable::{AbsoluteOffset, RelativeOffset, Viewport};
 use iced::widget::{
@@ -69,6 +71,7 @@ enum Message {
     Submit,
     OnScroll(Viewport),
     Execute,
+    HistoryBackwards,
 }
 
 struct ApplicationStyle {}
@@ -130,6 +133,10 @@ impl Application for LoadingState {
             LoadingState::Loaded(state) => match message {
                 Message::OnScroll(viewport) => {
                     state.scrollable_offset = viewport.absolute_offset();
+                    iced::Command::none()
+                }
+                Message::HistoryBackwards => {
+                    state.history = state.history.clone().pop_with_minimum();
                     iced::Command::none()
                 }
                 Message::InputChanged(value) => {
@@ -354,6 +361,7 @@ impl Application for LoadingState {
 
     fn subscription(&self) -> Subscription<Message> {
         keyboard::on_key_release(|key_code, modifiers| match (key_code, modifiers) {
+            (keyboard::KeyCode::Tab, keyboard::Modifiers::SHIFT) => Some(Message::HistoryBackwards),
             (keyboard::KeyCode::Escape, _) => Some(Message::Exit),
             (keyboard::KeyCode::Up, keyboard::Modifiers::SHIFT) => {
                 Some(Message::ToggleFullscreen(window::Mode::Fullscreen))
