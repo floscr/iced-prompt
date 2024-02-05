@@ -353,7 +353,7 @@ impl Application for LoadingState {
     }
 
     fn subscription(&self) -> Subscription<Message> {
-        keyboard::on_key_press(|key_code, modifiers| match (key_code, modifiers) {
+        keyboard::on_key_release(|key_code, modifiers| match (key_code, modifiers) {
             (keyboard::KeyCode::Escape, _) => Some(Message::Exit),
             (keyboard::KeyCode::Up, keyboard::Modifiers::SHIFT) => {
                 Some(Message::ToggleFullscreen(window::Mode::Fullscreen))
