@@ -3,7 +3,7 @@ use iced::theme::Theme;
 use iced::widget::scrollable::{AbsoluteOffset, RelativeOffset, Viewport};
 use iced::widget::{button, column, container, horizontal_rule, row, scrollable, text, text_input};
 use iced::window::{self, Level};
-use iced::{keyboard, subscription, Alignment, Event, Padding};
+use iced::{font, keyboard, subscription, Alignment, Event, Padding};
 use iced::{Application, Element};
 use iced::{Length, Settings, Size, Subscription};
 
@@ -18,6 +18,8 @@ use core::commands::{Command, SIMPLE_CMD_HEIGHT};
 use core::history::History;
 use gui::style::DEFAULT_BORDER_RADIUS;
 
+pub const ROBOTO_MONO_REGULAR_BYTES: &[u8] = include_bytes!("../fonts/Roboto-Regular.ttf");
+
 static SCROLLABLE_ID: Lazy<scrollable::Id> = Lazy::new(scrollable::Id::unique);
 static INPUT_ID: Lazy<text_input::Id> = Lazy::new(text_input::Id::unique);
 
@@ -31,6 +33,12 @@ pub fn main() -> iced::Result {
             resizable: false,
             level: Level::AlwaysOnTop,
             ..window::Settings::default()
+        },
+        default_font: iced::Font {
+            weight: iced::font::Weight::Normal,
+            family: iced::font::Family::Name("Roboto"),
+            monospaced: false,
+            stretch: iced::font::Stretch::Normal,
         },
         antialiasing: true,
         ..Settings::default()
@@ -69,6 +77,7 @@ enum Message {
     OnScroll(Viewport),
     Execute,
     HistoryBackwards,
+    FontLoaded(Result<(), font::Error>),
     // KeyboardEvent(KeyCode, Modifiers),
 }
 
@@ -105,7 +114,10 @@ impl Application for LoadingState {
         };
         (
             LoadingState::Loaded(state),
-            text_input::focus(INPUT_ID.clone()),
+            iced::Command::batch(vec![
+                font::load(ROBOTO_MONO_REGULAR_BYTES).map(Message::FontLoaded),
+                text_input::focus(INPUT_ID.clone()),
+            ]),
         )
     }
 
