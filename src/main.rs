@@ -4,9 +4,9 @@ use iced::theme::Theme;
 use iced::widget::scrollable::{AbsoluteOffset, RelativeOffset, Viewport};
 use iced::widget::{button, column, container, horizontal_rule, row, scrollable, text, text_input};
 use iced::window::{self, Level};
-use iced::{font, keyboard, subscription, Alignment, Event, Padding};
+use iced::{font, subscription, Alignment, Event, Padding};
 use iced::{Application, Element};
-use iced::{Length, Settings, Size, Subscription};
+use iced::{Length, Settings, Subscription};
 
 use once_cell::sync::Lazy;
 use uuid::Uuid;

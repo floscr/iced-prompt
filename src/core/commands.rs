@@ -4,7 +4,7 @@ use std::process;
 use serde::de::{Deserializer, MapAccess, SeqAccess, Visitor};
 use serde::Deserialize;
 use serde_json::Value;
-use std::fmt::{self, format};
+use std::fmt::{self};
 
 use uuid::Uuid;
 
@@ -390,7 +390,7 @@ impl Command {
         match &self.action {
             ActionKind::Exit => {
                 match result {
-                    Ok(output) => std::process::exit(0),
+                    Ok(_output) => std::process::exit(0),
                     Err(err) => {
                         println!("{:#?}", err);
                         std::process::exit(1);
