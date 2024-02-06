@@ -1,4 +1,4 @@
-use gui::fonts::ROBOTO;
+use gui::fonts::ROBOTO_BYTES;
 use iced::keyboard::{KeyCode, Modifiers};
 use iced::theme::Theme;
 use iced::widget::scrollable::{AbsoluteOffset, RelativeOffset, Viewport};
@@ -33,7 +33,7 @@ pub fn main() -> iced::Result {
             level: Level::AlwaysOnTop,
             ..window::Settings::default()
         },
-        default_font: gui::fonts::roboto,
+        default_font: gui::fonts::ROBOTO,
         antialiasing: true,
         ..Settings::default()
     })
@@ -106,7 +106,7 @@ impl Application for LoadingState {
         (
             LoadingState::Loaded(state),
             iced::Command::batch(vec![
-                font::load(ROBOTO).map(Message::FontLoaded),
+                font::load(ROBOTO_BYTES).map(Message::FontLoaded),
                 text_input::focus(INPUT_ID.clone()),
             ]),
         )
