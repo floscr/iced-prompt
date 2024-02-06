@@ -40,15 +40,10 @@ pub fn main() -> iced::Result {
 }
 
 #[derive(Debug, Default)]
-enum CommandSelection {
+enum Selection {
     #[default]
     Initial,
     Selected(Uuid),
-}
-
-#[derive(Debug)]
-enum LoadingState {
-    Loaded(State),
 }
 
 #[derive(Debug, Default)]
@@ -56,8 +51,13 @@ struct State {
     input_value: String,
     history: History,
     filter: Option<Vec<Uuid>>,
-    selection: CommandSelection,
+    selection: Selection,
     scrollable_offset: AbsoluteOffset,
+}
+
+#[derive(Debug)]
+enum LoadingState {
+    Loaded(State),
 }
 
 #[derive(Debug, Clone)]
@@ -134,7 +134,7 @@ impl Application for LoadingState {
                         .head()
                         .map(|cmd| Command::filter_items_by_value(&cmd, &value));
                     state.input_value = value;
-                    state.selection = CommandSelection::Initial;
+                    state.selection = Selection::Initial;
 
                     scrollable::snap_to(SCROLLABLE_ID.clone(), RelativeOffset::START)
                 }
@@ -147,8 +147,8 @@ impl Application for LoadingState {
                             };
 
                             let selection_index: usize = match state.selection {
-                                CommandSelection::Initial => 0,
-                                CommandSelection::Selected(id) => {
+                                Selection::Initial => 0,
+                                Selection::Selected(id) => {
                                     let i = &filtered_cmds.index_of_item_with_id(id).unwrap_or(0);
                                     *i
                                 }
@@ -170,8 +170,8 @@ impl Application for LoadingState {
                     };
 
                     let next_selection = match &selected_command_and_index {
-                        Some((id, _)) => CommandSelection::Selected(*id),
-                        None => CommandSelection::Initial,
+                        Some((id, _)) => Selection::Selected(*id),
+                        None => Selection::Initial,
                     };
 
                     state.selection = next_selection;
@@ -196,8 +196,8 @@ impl Application for LoadingState {
 
                     if let Some(cmds) = &history.head() {
                         let id = match &state.selection {
-                            CommandSelection::Initial => cmds.items.order[0],
-                            CommandSelection::Selected(selected_id) => *selected_id,
+                            Selection::Initial => cmds.items.order[0],
+                            Selection::Selected(selected_id) => *selected_id,
                         };
 
                         let command = cmds.items.items.get(&id);
@@ -214,7 +214,6 @@ impl Application for LoadingState {
                     iced::Command::none()
                 }
                 Message::Exit => std::process::exit(0),
-                // Message::ToggleFullscreen(mode) => window::change_mode(window::Id::MAIN, mode),
                 _ => iced::Command::none(),
             },
         }
@@ -252,8 +251,8 @@ impl Application for LoadingState {
                 };
 
                 let button_style = match (selection, i) {
-                    (CommandSelection::Initial, 0) => Button::Focused(button_position),
-                    (CommandSelection::Selected(selected_id), _) if selected_id == id => {
+                    (Selection::Initial, 0) => Button::Focused(button_position),
+                    (Selection::Selected(selected_id), _) if selected_id == id => {
                         Button::Focused(button_position)
                     }
                     _ => Button::Primary(button_position),
@@ -364,10 +363,6 @@ impl Application for LoadingState {
             },
             _ => None,
         })
-
-        // keyboard::on_key_release(|key_code, modifiers| match (key_code, modifiers) {
-        //     _ => None,
-        // })
     }
 
     fn style(&self) -> iced::theme::Application {
