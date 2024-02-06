@@ -333,7 +333,7 @@ impl Application for LoadingState {
 
         let footer: Element<_> = column![
             horizontal_rule(1).style(Rule::Default),
-            container(text("Footer"))
+            container(text(current_cmds.value))
                 .center_y()
                 .height(Length::Fill)
                 .padding(iced::Padding::from([0, 10])),
