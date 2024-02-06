@@ -48,7 +48,6 @@ enum CommandSelection {
 
 #[derive(Debug)]
 enum LoadingState {
-    Loading,
     Loaded(State),
 }
 
@@ -69,10 +68,8 @@ enum Message {
     Select(i32),
     Submit,
     OnScroll(Viewport),
-    Execute,
     HistoryBackwards,
     FontLoaded(Result<(), font::Error>),
-    // KeyboardEvent(KeyCode, Modifiers),
 }
 
 struct ApplicationStyle {}
@@ -121,19 +118,6 @@ impl Application for LoadingState {
 
     fn update(&mut self, message: Message) -> iced::Command<Message> {
         match self {
-            LoadingState::Loading => {
-                #[allow(clippy::single_match)]
-                // match message {
-                //     Message::IoLoaded(result) => {
-                //         *self = match result {
-                //             Some(_data) => LoadingState::Loaded(State { ..State::default() }),
-                //             None => LoadingState::Loaded(State::default()),
-                //         };
-                //     }
-                //     _ => {}
-                // }
-                text_input::focus(INPUT_ID.clone())
-            }
             LoadingState::Loaded(state) => match message {
                 Message::OnScroll(viewport) => {
                     state.scrollable_offset = viewport.absolute_offset();
@@ -241,11 +225,8 @@ impl Application for LoadingState {
             get_item_container_style, Button, ButtonPosition, Rule, TextInput,
         };
 
-        let default_state = State::default();
-        let state = match self {
-            LoadingState::Loading => &default_state,
-            LoadingState::Loaded(state) => state,
-        };
+        let _default_state = State::default();
+        let LoadingState::Loaded(state) = self;
         let input_value = &state.input_value;
         let history = &state.history;
         let filter = &state.filter;
