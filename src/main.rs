@@ -1,12 +1,9 @@
-use async_std::{print, println};
-use iced::keyboard::KeyCode;
+use iced::keyboard::{KeyCode, Modifiers};
 use iced::theme::Theme;
 use iced::widget::scrollable::{AbsoluteOffset, RelativeOffset, Viewport};
-use iced::widget::{
-    button, column, container, horizontal_rule, keyed_column, row, scrollable, text, text_input,
-};
+use iced::widget::{button, column, container, horizontal_rule, row, scrollable, text, text_input};
 use iced::window::{self, Level};
-use iced::{keyboard, Alignment, Padding};
+use iced::{keyboard, subscription, Alignment, Event, Padding};
 use iced::{Application, Element};
 use iced::{Length, Settings, Size, Subscription};
 
@@ -27,7 +24,7 @@ static INPUT_ID: Lazy<text_input::Id> = Lazy::new(text_input::Id::unique);
 pub fn main() -> iced::Result {
     LoadingState::run(Settings {
         window: window::Settings {
-            size: Size::new(700.0, 500.0),
+            size: (700, 500),
             position: window::Position::Centered,
             transparent: true,
             decorations: false,
@@ -72,6 +69,7 @@ enum Message {
     OnScroll(Viewport),
     Execute,
     HistoryBackwards,
+    // KeyboardEvent(KeyCode, Modifiers),
 }
 
 struct ApplicationStyle {}
@@ -135,6 +133,7 @@ impl Application for LoadingState {
                     state.scrollable_offset = viewport.absolute_offset();
                     iced::Command::none()
                 }
+                // Message::KeyboardEvent(key_code, modifiers) => match (key_code, modifiers) {},
                 Message::HistoryBackwards => {
                     state.history = state.history.clone().pop_with_minimum();
                     iced::Command::none()
@@ -225,7 +224,7 @@ impl Application for LoadingState {
                     iced::Command::none()
                 }
                 Message::Exit => std::process::exit(0),
-                Message::ToggleFullscreen(mode) => window::change_mode(window::Id::MAIN, mode),
+                // Message::ToggleFullscreen(mode) => window::change_mode(window::Id::MAIN, mode),
                 _ => iced::Command::none(),
             },
         }
@@ -273,23 +272,22 @@ impl Application for LoadingState {
                     _ => Button::Primary(button_position),
                 };
 
-                Some((
-                    *id,
+                Some(
                     button(
                         container(text(value).line_height(1.25))
                             .height(SIMPLE_CMD_HEIGHT)
                             .center_y(),
                     )
-                    .style(button_style)
+                    .style(iced::theme::Button::Custom(Box::new(button_style)))
                     .width(Length::Fill)
                     .into(),
-                ))
+                )
             } else {
                 None
             }
         });
 
-        let cmds_column = keyed_column(items)
+        let cmds_column = column(items)
             .spacing(1)
             .padding(iced::Padding::from([
                 0.,
@@ -360,19 +358,29 @@ impl Application for LoadingState {
     }
 
     fn subscription(&self) -> Subscription<Message> {
-        keyboard::on_key_release(|key_code, modifiers| match (key_code, modifiers) {
-            (keyboard::KeyCode::Tab, keyboard::Modifiers::SHIFT) => Some(Message::HistoryBackwards),
-            (keyboard::KeyCode::Escape, _) => Some(Message::Exit),
-            (keyboard::KeyCode::Up, keyboard::Modifiers::SHIFT) => {
-                Some(Message::ToggleFullscreen(window::Mode::Fullscreen))
-            }
-            (keyboard::KeyCode::Down, keyboard::Modifiers::SHIFT) => {
-                Some(Message::ToggleFullscreen(window::Mode::Windowed))
-            }
-            (keyboard::KeyCode::Up, _) => Some(Message::Select(-1)),
-            (keyboard::KeyCode::Down, _) => Some(Message::Select(1)),
+        subscription::events_with(|event, _status| match event {
+            Event::Keyboard(iced::keyboard::Event::KeyPressed {
+                modifiers,
+                key_code,
+            }) => match (key_code, modifiers) {
+                (KeyCode::Tab, Modifiers::SHIFT) => Some(Message::HistoryBackwards),
+                (KeyCode::Escape, _) => Some(Message::Exit),
+                (KeyCode::Up, Modifiers::SHIFT) => {
+                    Some(Message::ToggleFullscreen(window::Mode::Fullscreen))
+                }
+                (KeyCode::Down, Modifiers::SHIFT) => {
+                    Some(Message::ToggleFullscreen(window::Mode::Windowed))
+                }
+                (KeyCode::Up, _) => Some(Message::Select(-1)),
+                (KeyCode::Down, _) => Some(Message::Select(1)),
+                _ => None,
+            },
             _ => None,
         })
+
+        // keyboard::on_key_release(|key_code, modifiers| match (key_code, modifiers) {
+        //     _ => None,
+        // })
     }
 
     fn style(&self) -> iced::theme::Application {

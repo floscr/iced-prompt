@@ -6,7 +6,7 @@ edition = "2021"
 publish = false
 
 [dependencies]
-iced = { git ="https://github.com/iced-rs/iced.git", rev ="a5ae442819227b3cd55116028e6d6c96caa6fda9", features = ["async-std", "debug"] }
+iced = { version = "0.10.0", features = ["async-std", "debug", "advanced"] }
 
 async-std = { version = "1.12.0" }
 directories-next = { version = "2.0.0" }
