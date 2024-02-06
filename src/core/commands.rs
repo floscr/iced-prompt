@@ -29,7 +29,7 @@ pub enum CommandKind {
 
 #[derive(Debug, PartialEq)]
 pub enum CommandResultError {
-    IdNotFound(Uuid),
+    // IdNotFound(Uuid),
     FailedWithCode(String, i32),
     ExecutionFailed(String),
 }
@@ -374,13 +374,6 @@ impl Command {
             CommandKind::SyncShellCommand(shell_command) => {
                 CommandKind::sync_execute(shell_command.clone())
             }
-        }
-    }
-
-    pub fn execute_child(&self, id: Uuid) -> Result<String, CommandResultError> {
-        match self.items.items.get(&id) {
-            Some(cmd) => cmd.execute(),
-            None => Result::Err(CommandResultError::IdNotFound(id)),
         }
     }
 
