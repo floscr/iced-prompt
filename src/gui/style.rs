@@ -42,15 +42,9 @@ pub fn get_item_container_style() -> iced::theme::Container {
     iced::theme::Container::Custom(Box::new(ContainerStyle::Default))
 }
 
-pub enum ButtonPosition {
-    Default,
-    Top,
-    Bottom,
-}
-
 pub enum Button {
-    Primary(ButtonPosition),
-    Focused(ButtonPosition),
+    Primary,
+    Focused,
     Secondary,
 }
 
@@ -60,8 +54,8 @@ impl button::StyleSheet for Button {
     fn active(&self, _style: &Self::Style) -> button::Appearance {
         button::Appearance {
             background: Some(Background::Color(match self {
-                Button::Primary(_) => colors::BUTTON_BG_TRANSPARENT,
-                Button::Focused(_) => colors::BUTTON_BG_SELECTED,
+                Button::Primary => colors::BUTTON_BG_TRANSPARENT,
+                Button::Focused => colors::BUTTON_BG_SELECTED,
                 Button::Secondary => colors::BUTTON_SECONDARY,
             })),
             border_radius: BorderRadius::from(DEFAULT_BORDER_RADIUS),

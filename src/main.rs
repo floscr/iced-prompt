@@ -219,9 +219,7 @@ impl Application for LoadingState {
     }
 
     fn view(&self) -> Element<Message> {
-        use crate::gui::style::{
-            get_item_container_style, Button, ButtonPosition, Rule, TextInput,
-        };
+        use crate::gui::style::{get_item_container_style, Button, Rule, TextInput};
 
         let _default_state = State::default();
         let LoadingState::Loaded(state) = self;
@@ -232,11 +230,6 @@ impl Application for LoadingState {
 
         let current_cmds = history.head().unwrap_or_default();
 
-        let filtered_items_len = filter
-            .clone()
-            .map(|x| x.len())
-            .unwrap_or(current_cmds.items.order.len());
-
         let mut filtered_index = 0; // To determine the top-most item of the filtered items
         let items = current_cmds.map_filter_items(|i, id, cmd| {
             let value = &cmd.value;
@@ -244,18 +237,10 @@ impl Application for LoadingState {
             let matches_value = value.to_lowercase().contains(&input_value.to_lowercase());
 
             if matches_value {
-                let button_position = match i {
-                    0 => ButtonPosition::Top,
-                    _ if i == filtered_items_len - 1 => ButtonPosition::Bottom,
-                    _ => ButtonPosition::Default,
-                };
-
                 let button_style = match (selection, filtered_index) {
-                    (Selection::Initial, 0) => Button::Focused(button_position),
-                    (Selection::Selected(selected_id), _) if selected_id == id => {
-                        Button::Focused(button_position)
-                    }
-                    _ => Button::Primary(button_position),
+                    (Selection::Initial, 0) => Button::Focused,
+                    (Selection::Selected(selected_id), _) if selected_id == id => Button::Focused,
+                    _ => Button::Primary,
                 };
 
                 filtered_index += 1;
