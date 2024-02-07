@@ -225,7 +225,6 @@ impl Application for LoadingState {
         let LoadingState::Loaded(state) = self;
         let input_value = &state.input_value;
         let history = &state.history;
-        let filter = &state.filter;
         let selection = &state.selection;
 
         let current_cmds = history.head().unwrap_or_default();
