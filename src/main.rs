@@ -350,8 +350,8 @@ impl Application for LoadingState {
                 (KeyCode::Down, Modifiers::SHIFT) => {
                     Some(Message::ToggleFullscreen(window::Mode::Windowed))
                 }
-                (KeyCode::Up, _) => Some(Message::Select(-1)),
-                (KeyCode::Down, _) => Some(Message::Select(1)),
+                (KeyCode::Up, _) | (KeyCode::P, Modifiers::CTRL) => Some(Message::Select(-1)),
+                (KeyCode::Down, _) | (KeyCode::N, Modifiers::CTRL) => Some(Message::Select(1)),
                 _ => None,
             },
             _ => None,
