@@ -74,10 +74,10 @@ enum Message {
 
 impl State {
     fn navigate(&mut self, history: History) -> iced::Command<Message> {
-        self.history = history;
-        self.selection = Selection::Initial;
         self.filter = None;
+        self.selection = Selection::Initial;
         self.input_value = "".to_string();
+        self.history = history;
 
         scrollable::snap_to(SCROLLABLE_ID.clone(), RelativeOffset::START)
     }
@@ -341,6 +341,7 @@ impl Application for LoadingState {
                 modifiers,
                 key_code,
             }) => match (key_code, modifiers) {
+                (KeyCode::Backspace, Modifiers::SHIFT) => Some(Message::HistoryBackwards),
                 (KeyCode::Tab, Modifiers::SHIFT) => Some(Message::HistoryBackwards),
                 (KeyCode::Escape, _) => Some(Message::Exit(0)),
                 (KeyCode::Up, Modifiers::SHIFT) => {
