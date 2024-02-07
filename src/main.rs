@@ -72,6 +72,17 @@ enum Message {
     FontLoaded(Result<(), font::Error>),
 }
 
+impl State {
+    fn navigate(&mut self, history: History) -> iced::Command<Message> {
+        self.history = history;
+        self.selection = Selection::Initial;
+        self.filter = None;
+        self.input_value = "".to_string();
+
+        scrollable::snap_to(SCROLLABLE_ID.clone(), RelativeOffset::START)
+    }
+}
+
 struct ApplicationStyle {}
 impl iced::application::StyleSheet for ApplicationStyle {
     type Style = iced::Theme;
@@ -124,10 +135,8 @@ impl Application for LoadingState {
                     iced::Command::none()
                 }
                 Message::HistoryBackwards => {
-                    state.history = state.history.clone().pop_with_minimum();
-                    state.filter = None;
-                    state.input_value = "".to_string();
-                    iced::Command::none()
+                    let prev_history = state.history.clone().pop_with_minimum();
+                    state.navigate(prev_history)
                 }
                 Message::InputChanged(value) => {
                     state.filter = state
@@ -191,7 +200,7 @@ impl Application for LoadingState {
                 Message::Submit => {
                     let history = &state.history;
 
-                    if let Some(cmds) = &history.head() {
+                    if let Some(cmds) = history.head() {
                         let id = match &state.selection {
                             Selection::Initial => cmds.items.order[0],
                             Selection::Selected(selected_id) => *selected_id,
@@ -200,16 +209,13 @@ impl Application for LoadingState {
                         let command = cmds.items.items.get(&id);
                         let result = command.and_then(Command::execute_action);
 
-                        match result {
-                            Some(cmd) => {
-                                state.history = history.clone().push(cmd);
-                                state.filter = None;
-                                state.input_value = "".to_string();
-                            }
-                            _ => std::process::exit(1),
+                        if let Some(cmd) = result {
+                            let next_history = history.clone().push(cmd);
+                            return state.navigate(next_history);
                         }
-                    }
 
+                        std::process::exit(1);
+                    }
                     iced::Command::none()
                 }
                 Message::Exit(exit_code) => std::process::exit(exit_code),
