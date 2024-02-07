@@ -126,6 +126,7 @@ impl Application for LoadingState {
                 // Message::KeyboardEvent(key_code, modifiers) => match (key_code, modifiers) {},
                 Message::HistoryBackwards => {
                     state.history = state.history.clone().pop_with_minimum();
+                    state.filter = None;
                     iced::Command::none()
                 }
                 Message::InputChanged(value) => {
@@ -206,6 +207,7 @@ impl Application for LoadingState {
                         match result {
                             Some(cmd) => {
                                 state.history = history.clone().push(cmd);
+                                state.filter = None;
                             }
                             _ => std::process::exit(1),
                         }
