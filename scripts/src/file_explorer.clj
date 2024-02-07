@@ -38,7 +38,7 @@
       (doto println)))
 
 (comment
-  (list-dir-cmd "~")
+  (list-dir-data-edn "~")
   nil)
 
 ;; Main ------------------------------------------------------------------------
