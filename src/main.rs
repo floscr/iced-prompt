@@ -123,7 +123,6 @@ impl Application for LoadingState {
                     state.scrollable_offset = viewport.absolute_offset();
                     iced::Command::none()
                 }
-                // Message::KeyboardEvent(key_code, modifiers) => match (key_code, modifiers) {},
                 Message::HistoryBackwards => {
                     state.history = state.history.clone().pop_with_minimum();
                     state.filter = None;
