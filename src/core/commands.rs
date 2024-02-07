@@ -351,7 +351,11 @@ impl Command {
     }
 
     pub fn command_kind_height(&self) -> f32 {
-        SIMPLE_CMD_HEIGHT + 1.
+        SIMPLE_CMD_HEIGHT
+            // Spacing
+            + 1.
+            // Figure out what this value is
+            + 10.
     }
 
     pub fn scroll_offset_at_index(&self, index: usize) -> f32 {

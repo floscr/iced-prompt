@@ -180,17 +180,13 @@ impl Application for LoadingState {
 
                     match &selected_command_and_index {
                         None => scrollable::snap_to(SCROLLABLE_ID.clone(), RelativeOffset::START),
-                        Some((_, scroll_offset)) => {
-                            let next_scroll_offset = scroll_offset - state.scrollable_offset.y;
-
-                            scrollable::scroll_to(
-                                SCROLLABLE_ID.clone(),
-                                AbsoluteOffset {
-                                    x: 0.0,
-                                    y: next_scroll_offset,
-                                },
-                            )
-                        }
+                        Some((_, scroll_offset)) => scrollable::scroll_to(
+                            SCROLLABLE_ID.clone(),
+                            AbsoluteOffset {
+                                x: 0.0,
+                                y: *scroll_offset,
+                            },
+                        ),
                     }
                 }
                 Message::Submit => {
