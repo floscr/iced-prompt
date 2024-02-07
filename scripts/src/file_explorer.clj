@@ -18,10 +18,9 @@
                                 :shell (str "bb ./scripts/src/file_explorer.clj " cur)
                                 :action "Next"}
                                {:value value
-                                :action "Exit"})]
-                    (cond-> acc
-                      dir? (update :dirs conj item)
-                      :else (update :files conj item))))
+                                :action "Exit"})
+                        key (if dir? :dirs :files)]
+                    (update acc key conj item)))
                 {:dirs []
                  :files []}
                 entries)
