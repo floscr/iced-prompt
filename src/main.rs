@@ -64,7 +64,7 @@ enum LoadingState {
 enum Message {
     InputChanged(String),
     ToggleFullscreen(window::Mode),
-    Exit,
+    Exit(i32),
     Select(i32),
     Submit,
     OnScroll(Viewport),
@@ -212,7 +212,7 @@ impl Application for LoadingState {
 
                     iced::Command::none()
                 }
-                Message::Exit => std::process::exit(0),
+                Message::Exit(exit_code) => std::process::exit(exit_code),
                 _ => iced::Command::none(),
             },
         }
@@ -337,7 +337,7 @@ impl Application for LoadingState {
                 key_code,
             }) => match (key_code, modifiers) {
                 (KeyCode::Tab, Modifiers::SHIFT) => Some(Message::HistoryBackwards),
-                (KeyCode::Escape, _) => Some(Message::Exit),
+                (KeyCode::Escape, _) => Some(Message::Exit(0)),
                 (KeyCode::Up, Modifiers::SHIFT) => {
                     Some(Message::ToggleFullscreen(window::Mode::Fullscreen))
                 }
