@@ -237,6 +237,7 @@ impl Application for LoadingState {
             .map(|x| x.len())
             .unwrap_or(current_cmds.items.order.len());
 
+        let mut filtered_index = 0; // To determine the top-most item of the filtered items
         let items = current_cmds.map_filter_items(|i, id, cmd| {
             let value = &cmd.value;
 
@@ -249,13 +250,15 @@ impl Application for LoadingState {
                     _ => ButtonPosition::Default,
                 };
 
-                let button_style = match (selection, i) {
+                let button_style = match (selection, filtered_index) {
                     (Selection::Initial, 0) => Button::Focused(button_position),
                     (Selection::Selected(selected_id), _) if selected_id == id => {
                         Button::Focused(button_position)
                     }
                     _ => Button::Primary(button_position),
                 };
+
+                filtered_index += 1;
 
                 Some(
                     button(
