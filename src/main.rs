@@ -127,6 +127,7 @@ impl Application for LoadingState {
                 Message::HistoryBackwards => {
                     state.history = state.history.clone().pop_with_minimum();
                     state.filter = None;
+                    state.input_value = "".to_string();
                     iced::Command::none()
                 }
                 Message::InputChanged(value) => {
@@ -208,6 +209,7 @@ impl Application for LoadingState {
                             Some(cmd) => {
                                 state.history = history.clone().push(cmd);
                                 state.filter = None;
+                                state.input_value = "".to_string();
                             }
                             _ => std::process::exit(1),
                         }
