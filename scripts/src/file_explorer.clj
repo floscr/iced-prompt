@@ -48,4 +48,5 @@
          [path] (list-dir-cmd path)
          :else (System/exit 1)))
 
-(apply -main *command-line-args*)
+(when (= *file* (System/getProperty "babashka.file"))
+  (apply -main *command-line-args*))
