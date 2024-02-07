@@ -231,7 +231,7 @@ impl Application for LoadingState {
         let current_cmds = history.head().unwrap_or_default();
 
         let mut filtered_index = 0; // To determine the top-most item of the filtered items
-        let items = current_cmds.map_filter_items(|i, id, cmd| {
+        let items = current_cmds.map_filter_items(|_i, id, cmd| {
             let value = &cmd.value;
 
             let matches_value = value.to_lowercase().contains(&input_value.to_lowercase());
