@@ -16,8 +16,10 @@
                         item (if dir?
                                {:value value
                                 :shell (str "bb ./scripts/src/file_explorer.clj " cur)
+                                :icon "Directory"
                                 :action "Next"}
                                {:value value
+                                :icon "File"
                                 :action "Exit"})
                         key (if dir? :dirs :files)]
                     (update acc key conj item)))

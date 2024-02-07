@@ -55,6 +55,8 @@ pub struct Command {
     #[serde(default, alias = "shell", deserialize_with = "deserialize_kind")]
     pub kind: CommandKind,
     #[serde(default)]
+    pub icon: Option<String>,
+    #[serde(default)]
     pub action: ActionKind,
     #[serde(default, deserialize_with = "Items::deserialize")]
     pub items: Items<Command>,

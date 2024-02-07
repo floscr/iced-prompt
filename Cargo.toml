@@ -6,7 +6,7 @@ edition = "2021"
 publish = false
 
 [dependencies]
-iced = { version = "0.10.0", features = ["async-std", "debug", "advanced"] }
+iced = { version = "0.10.0", features = ["async-std", "debug", "advanced", "svg"] }
 
 async-std = { version = "1.12.0" }
 directories-next = { version = "2.0.0" }

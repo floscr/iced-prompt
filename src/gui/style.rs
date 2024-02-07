@@ -1,5 +1,5 @@
 use iced::{
-    widget::{button, container, rule, text_input},
+    widget::{button, container, rule, svg, text_input},
     Background, BorderRadius, Color, Vector,
 };
 
@@ -163,4 +163,35 @@ impl From<Rule> for iced::theme::Rule {
     fn from(style: Rule) -> Self {
         iced::theme::Rule::Custom(Box::new(style))
     }
+}
+
+#[derive(Default, Debug, Clone, Copy)]
+pub enum Svg {
+    #[default]
+    Default,
+}
+
+impl iced::widget::svg::StyleSheet for Svg {
+    type Style = iced::Theme;
+
+    fn appearance(&self, _style: &Self::Style) -> svg::Appearance {
+        svg::Appearance {
+            color: Some(Color {
+                r: 0.6,
+                g: 0.6,
+                b: 0.6,
+                a: 1.,
+            }),
+        }
+    }
+}
+
+impl From<Svg> for iced::theme::Svg {
+    fn from(style: Svg) -> Self {
+        iced::theme::Svg::Custom(Box::new(style))
+    }
+}
+
+pub fn get_svg_style() -> iced::theme::Svg {
+    iced::theme::Svg::Custom(Box::new(Svg::Default))
 }

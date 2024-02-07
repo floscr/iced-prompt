@@ -2,7 +2,10 @@ use gui::fonts::ROBOTO_BYTES;
 use iced::keyboard::{KeyCode, Modifiers};
 use iced::theme::Theme;
 use iced::widget::scrollable::{AbsoluteOffset, RelativeOffset, Viewport};
-use iced::widget::{button, column, container, horizontal_rule, row, scrollable, text, text_input};
+use iced::widget::{
+    button, column, container, horizontal_rule, row, scrollable, svg, text, text_input,
+};
+
 use iced::window::{self, Level};
 use iced::{font, subscription, Alignment, Event, Padding};
 use iced::{Application, Element};
@@ -18,6 +21,9 @@ mod utils;
 use core::commands::{Command, SIMPLE_CMD_HEIGHT};
 use core::history::History;
 use gui::style::DEFAULT_BORDER_RADIUS;
+
+use crate::gui::icons;
+use crate::gui::style::get_svg_style;
 
 static SCROLLABLE_ID: Lazy<scrollable::Id> = Lazy::new(scrollable::Id::unique);
 static INPUT_ID: Lazy<text_input::Id> = Lazy::new(text_input::Id::unique);
@@ -225,7 +231,7 @@ impl Application for LoadingState {
     }
 
     fn view(&self) -> Element<Message> {
-        use crate::gui::style::{get_item_container_style, Button, Rule, TextInput};
+        use crate::gui::style::{get_item_container_style, Button, Rule, Svg, TextInput};
 
         let _default_state = State::default();
         let LoadingState::Loaded(state) = self;
@@ -238,6 +244,7 @@ impl Application for LoadingState {
         let mut filtered_index = 0; // To determine the top-most item of the filtered items
         let items = current_cmds.map_filter_items(|_i, id, cmd| {
             let value = &cmd.value;
+            let icon = &cmd.icon;
 
             let matches_value = value.to_lowercase().contains(&input_value.to_lowercase());
 
@@ -250,9 +257,26 @@ impl Application for LoadingState {
 
                 filtered_index += 1;
 
+                let text_value = text(value).line_height(1.25);
+
+                let icon_element = match icon {
+                    Some(icon_string) => match icon_string.as_str() {
+                        "Directory" => Some(icons::DIRECTORY.clone()),
+                        "File" => Some(icons::FILE.clone()),
+                        _ => None,
+                    },
+                    _ => None,
+                }
+                .map(|svg_icon| svg(svg_icon).width(20.).height(20.).style(get_svg_style()));
+
+                let button_content = match icon_element {
+                    Some(icon_el) => row![icon_el, text_value].spacing(5),
+                    _ => row![text_value],
+                };
+
                 Some(
                     button(
-                        container(text(value).line_height(1.25))
+                        container(button_content)
                             .height(SIMPLE_CMD_HEIGHT)
                             .center_y(),
                     )
