@@ -235,7 +235,7 @@ impl Application for LoadingState {
     }
 
     fn view(&self) -> Element<Message> {
-        use crate::gui::style::{get_item_container_style, Button, Rule, Svg, TextInput};
+        use crate::gui::style::{get_item_container_style, Button, Rule, TextInput};
 
         let _default_state = State::default();
         let LoadingState::Loaded(state) = self;
@@ -250,7 +250,7 @@ impl Application for LoadingState {
             .iter()
             .enumerate()
             .map(|(idx, id)| {
-                let cmd = current_cmds.items.items.get(&id).unwrap();
+                let cmd = current_cmds.items.items.get(id).unwrap();
                 let value = &cmd.value;
                 let icon = &cmd.icon;
 
