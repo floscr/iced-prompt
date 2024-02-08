@@ -244,22 +244,21 @@ impl Application for LoadingState {
         let selection = &state.selection;
 
         let current_cmds = history.head().unwrap_or_default();
+        let order: &Vec<Uuid> = &state.filter.clone().unwrap_or(current_cmds.items.order);
 
-        let mut filtered_index = 0; // To determine the top-most item of the filtered items
-        let items = current_cmds.map_filter_items(|_i, id, cmd| {
-            let value = &cmd.value;
-            let icon = &cmd.icon;
+        let items = order
+            .iter()
+            .enumerate()
+            .map(|(idx, id)| {
+                let cmd = current_cmds.items.items.get(&id).unwrap();
+                let value = &cmd.value;
+                let icon = &cmd.icon;
 
-            let matches_value = value.to_lowercase().contains(&input_value.to_lowercase());
-
-            if matches_value {
-                let button_style = match (selection, filtered_index) {
+                let button_style = match (selection, idx) {
                     (Selection::Initial, 0) => Button::Focused,
                     (Selection::Selected(selected_id), _) if selected_id == id => Button::Focused,
                     _ => Button::Primary,
                 };
-
-                filtered_index += 1;
 
                 let text_value = text(value).line_height(1.25);
 
@@ -278,20 +277,16 @@ impl Application for LoadingState {
                     _ => row![text_value],
                 };
 
-                Some(
-                    button(
-                        container(button_content)
-                            .height(SIMPLE_CMD_HEIGHT)
-                            .center_y(),
-                    )
-                    .style(iced::theme::Button::Custom(Box::new(button_style)))
-                    .width(Length::Fill)
-                    .into(),
+                button(
+                    container(button_content)
+                        .height(SIMPLE_CMD_HEIGHT)
+                        .center_y(),
                 )
-            } else {
-                None
-            }
-        });
+                .style(iced::theme::Button::Custom(Box::new(button_style)))
+                .width(Length::Fill)
+                .into()
+            })
+            .collect();
 
         let cmds_column = column(items)
             .spacing(1)

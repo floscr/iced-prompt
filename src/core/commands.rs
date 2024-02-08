@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::process;
 
+use levenshtein::levenshtein;
 use serde::de::{Deserializer, MapAccess, SeqAccess, Visitor};
 use serde::Deserialize;
 use serde_json::Value;
@@ -314,17 +315,27 @@ impl Command {
     }
 
     pub fn filter_items_by_value(&self, substring: &str) -> Vec<Uuid> {
-        self.map_filter_items(|_, id, command| {
-            let matches_value = command
-                .value
-                .to_lowercase()
-                .contains(&substring.to_lowercase());
+        let mut items: Vec<(usize, Uuid)> = self.map_filter_items(|_, id, command| {
+            let value = &command.value;
+            let matches_value = value.to_lowercase().contains(&substring.to_lowercase());
             if matches_value {
-                Some(*id)
+                Some((levenshtein(value, substring), *id))
             } else {
                 None
             }
-        })
+        });
+
+        items.sort_by(|(a, _), (b, _)| a.cmp(b));
+
+        let xs: Vec<(usize, Option<String>)> = items
+            .clone()
+            .into_iter()
+            .map(|(a, b)| (a, self.items.items.get(&b).map(|x| x.value.clone())))
+            .collect();
+
+        println!("{:#?}", xs);
+
+        items.into_iter().map(|(_, v)| v).collect()
     }
 
     pub fn index_of_item_with_id(&self, id: Uuid) -> Option<usize> {
