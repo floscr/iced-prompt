@@ -389,7 +389,10 @@ impl Command {
         match &self.action {
             ActionKind::Exit => {
                 match result {
-                    Ok(_output) => std::process::exit(0),
+                    Ok(output) => {
+                        println!("{:#?}", output);
+                        std::process::exit(0)
+                    }
                     Err(err) => {
                         println!("{:#?}", err);
                         std::process::exit(1);
