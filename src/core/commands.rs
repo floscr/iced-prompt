@@ -324,16 +324,7 @@ impl Command {
                 None
             }
         });
-
         items.sort_by(|(a, _), (b, _)| a.cmp(b));
-
-        let xs: Vec<(usize, Option<String>)> = items
-            .clone()
-            .into_iter()
-            .map(|(a, b)| (a, self.items.items.get(&b).map(|x| x.value.clone())))
-            .collect();
-
-        println!("{:#?}", xs);
 
         items.into_iter().map(|(_, v)| v).collect()
     }
