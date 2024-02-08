@@ -23,7 +23,7 @@ use core::history::History;
 use gui::style::DEFAULT_BORDER_RADIUS;
 
 use crate::gui::icons;
-use crate::gui::style::get_svg_style;
+use crate::gui::style::{footer_container_style, get_svg_style};
 
 static SCROLLABLE_ID: Lazy<scrollable::Id> = Lazy::new(scrollable::Id::unique);
 static INPUT_ID: Lazy<text_input::Id> = Lazy::new(text_input::Id::unique);
@@ -235,7 +235,7 @@ impl Application for LoadingState {
     }
 
     fn view(&self) -> Element<Message> {
-        use crate::gui::style::{get_item_container_style, Button, Rule, TextInput};
+        use crate::gui::style::{default_container_style, Button, Rule, TextInput};
 
         let _default_state = State::default();
         let LoadingState::Loaded(state) = self;
@@ -332,12 +332,13 @@ impl Application for LoadingState {
 
         let footer: Element<_> = column![
             horizontal_rule(1).style(Rule::Default),
-            container(text(current_cmds.value))
+            container(text(current_cmds.value).size(13))
+                .style(footer_container_style())
                 .center_y()
                 .height(Length::Fill)
                 .padding(iced::Padding::from([0, 10])),
         ]
-        .height(30)
+        .height(35)
         .into();
 
         let wrapper: Element<Message> = column![row![input], content, row![footer]]
@@ -353,7 +354,7 @@ impl Application for LoadingState {
                 .height(Length::Fill)
                 .center_x()
                 .padding(1)
-                .style(get_item_container_style())
+                .style(default_container_style())
                 .center_y(),
         )
     }

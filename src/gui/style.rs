@@ -1,5 +1,5 @@
 use iced::{
-    widget::{button, container, rule, svg, text_input},
+    widget::{button, container, rule, svg, text, text_input},
     Background, BorderRadius, Color, Vector,
 };
 
@@ -12,34 +12,50 @@ pub const DEFAULT_BORDER_RADIUS: f32 = 5.;
 pub enum ContainerStyle {
     #[default]
     Default,
+    Footer,
 }
 
 impl container::StyleSheet for ContainerStyle {
     type Style = iced::Theme;
 
     fn appearance(&self, _style: &Self::Style) -> container::Appearance {
-        container::Appearance {
-            background: Some(Background::Color(Color {
-                r: 0.,
-                g: 0.,
-                b: 0.,
-                a: 0.55,
-            })),
-            border_radius: BorderRadius::from(APP_WINDOW_BORDER_RADIUS),
-            border_width: 0.5,
-            border_color: Color {
-                r: 0.25,
-                g: 0.25,
-                b: 0.25,
-                a: 0.1,
+        match self {
+            ContainerStyle::Footer => container::Appearance {
+                text_color: Some(Color {
+                    r: 1.,
+                    g: 1.,
+                    b: 1.,
+                    a: 0.35,
+                }),
+                ..container::Appearance::default()
             },
-            ..container::Appearance::default()
+            _ => container::Appearance {
+                background: Some(Background::Color(Color {
+                    r: 0.,
+                    g: 0.,
+                    b: 0.,
+                    a: 0.55,
+                })),
+                border_radius: BorderRadius::from(APP_WINDOW_BORDER_RADIUS),
+                border_width: 0.5,
+                border_color: Color {
+                    r: 0.25,
+                    g: 0.25,
+                    b: 0.25,
+                    a: 0.1,
+                },
+                ..container::Appearance::default()
+            },
         }
     }
 }
 
-pub fn get_item_container_style() -> iced::theme::Container {
+pub fn default_container_style() -> iced::theme::Container {
     iced::theme::Container::Custom(Box::new(ContainerStyle::Default))
+}
+
+pub fn footer_container_style() -> iced::theme::Container {
+    iced::theme::Container::Custom(Box::new(ContainerStyle::Footer))
 }
 
 pub enum Button {
@@ -152,7 +168,7 @@ impl rule::StyleSheet for Rule {
                 b: 1.,
                 a: 0.01,
             },
-            width: 0,
+            width: 1,
             radius: 0.0.into(),
             fill_mode: rule::FillMode::Full,
         }
