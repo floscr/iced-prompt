@@ -1,6 +1,6 @@
 use iced::{
-    widget::{button, container, rule, scrollable, svg, text, text_input},
-    Background, BorderRadius, Color, Vector,
+    widget::{button, container, rule, scrollable, svg, text_input},
+    Background, BorderRadius, Color,
 };
 
 use super::colors;
@@ -75,7 +75,6 @@ impl button::StyleSheet for Button {
                 Button::Secondary => colors::BUTTON_SECONDARY,
             })),
             border_radius: BorderRadius::from(DEFAULT_BORDER_RADIUS),
-            shadow_offset: Vector::new(1.0, 1.0),
             text_color: Color::from_rgb8(0xEE, 0xEE, 0xEE),
             ..button::Appearance::default()
         }
@@ -84,7 +83,7 @@ impl button::StyleSheet for Button {
     fn hovered(&self, style: &Self::Style) -> button::Appearance {
         button::Appearance {
             text_color: Color::WHITE,
-            shadow_offset: Vector::new(1.0, 2.0),
+            background: Some(Background::Color(colors::BUTTON_SECONDARY)),
             ..self.active(style)
         }
     }
