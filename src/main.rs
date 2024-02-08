@@ -72,7 +72,7 @@ enum Message {
     ToggleFullscreen(window::Mode),
     Exit(i32),
     Select(i32),
-    Submit,
+    Submit(Option<Uuid>),
     OnScroll(Viewport),
     HistoryBackwards,
     FontLoaded(Result<(), font::Error>),
@@ -207,17 +207,21 @@ impl Application for LoadingState {
                         ),
                     }
                 }
-                Message::Submit => {
+                Message::Submit(maybe_id) => {
                     let history = &state.history;
                     let filter = &state.filter;
 
                     if let Some(cmds) = history.head() {
-                        let id = match &state.selection {
-                            Selection::Initial => {
-                                let order = filter.clone().unwrap_or(cmds.items.order);
-                                order[0]
+                        let id = if let Some(maybe_id) = maybe_id {
+                            maybe_id
+                        } else {
+                            match &state.selection {
+                                Selection::Initial => {
+                                    let order = filter.clone().unwrap_or(cmds.items.order);
+                                    order[0]
+                                }
+                                Selection::Selected(selected_id) => *selected_id,
                             }
-                            Selection::Selected(selected_id) => *selected_id,
                         };
 
                         let command = cmds.items.items.get(&id);
@@ -288,6 +292,7 @@ impl Application for LoadingState {
                 )
                 .style(iced::theme::Button::Custom(Box::new(button_style)))
                 .width(Length::Fill)
+                .on_press(Message::Submit(Some(*id)))
                 .into()
             })
             .collect();
@@ -328,7 +333,7 @@ impl Application for LoadingState {
             text_input("Your prompt", input_value)
                 .id(INPUT_ID.clone())
                 .style(TextInput::Default)
-                .on_submit(Message::Submit)
+                .on_submit(Message::Submit(None))
                 .on_input(Message::InputChanged)
                 .padding(Padding::from([15., DEFAULT_BORDER_RADIUS + 10.]))
                 .size(15.),
