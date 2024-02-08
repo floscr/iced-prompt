@@ -145,10 +145,14 @@ impl Application for LoadingState {
                     state.navigate(prev_history)
                 }
                 Message::InputChanged(value) => {
-                    state.filter = state
-                        .history
-                        .head()
-                        .map(|cmd| Command::filter_items_by_value(&cmd, &value));
+                    if value.is_empty() {
+                        state.filter = None;
+                    } else {
+                        state.filter = state
+                            .history
+                            .head()
+                            .map(|cmd| Command::filter_items_by_value(&cmd, &value));
+                    }
                     state.input_value = value;
                     state.selection = Selection::Initial;
 
