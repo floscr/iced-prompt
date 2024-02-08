@@ -1,5 +1,5 @@
 use iced::{
-    widget::{button, container, rule, svg, text, text_input},
+    widget::{button, container, rule, scrollable, svg, text, text_input},
     Background, BorderRadius, Color, Vector,
 };
 
@@ -210,4 +210,69 @@ impl From<Svg> for iced::theme::Svg {
 
 pub fn get_svg_style() -> iced::theme::Svg {
     iced::theme::Svg::Custom(Box::new(Svg::Default))
+}
+
+#[derive(Default, Debug, Clone, Copy)]
+pub enum Scrollable {
+    #[default]
+    Default,
+}
+
+impl scrollable::StyleSheet for Scrollable {
+    type Style = iced::Theme;
+
+    fn active(&self, _style: &Self::Style) -> scrollable::Scrollbar {
+        scrollable::Scrollbar {
+            background: None,
+            border_radius: BorderRadius::from(0.),
+            border_width: 0.0,
+            border_color: Color::TRANSPARENT,
+            scroller: scrollable::Scroller {
+                color: Color {
+                    r: 1.,
+                    g: 1.,
+                    b: 1.,
+                    a: 0.25,
+                },
+                border_radius: BorderRadius::from(100.),
+                border_width: 0.0,
+                border_color: Color::TRANSPARENT,
+            },
+        }
+    }
+
+    fn hovered(&self, style: &Self::Style, is_mouse_over_scrollbar: bool) -> scrollable::Scrollbar {
+        let active = self.active(style);
+
+        active
+
+        // scrollable::Scrollbar {
+        //     background: Color { a: 0.5, ..SURFACE }.into(),
+        //     scroller: scrollable::Scroller {
+        //         color: HOVERED,
+        //         ..active.scroller
+        //     },
+        //     ..active
+        // }
+    }
+
+    fn dragging(&self, style: &Self::Style) -> scrollable::Scrollbar {
+        let hovered = self.hovered(style, true);
+
+        hovered
+
+        // scrollable::Scrollbar {
+        //     scroller: scrollable::Scroller {
+        //         color: Color::from_rgb(0.85, 0.85, 0.85),
+        //         ..hovered.scroller
+        //     },
+        //     ..hovered
+        // }
+    }
+}
+
+impl From<Scrollable> for iced::theme::Scrollable {
+    fn from(style: Scrollable) -> Self {
+        iced::theme::Scrollable::Custom(Box::new(style))
+    }
 }

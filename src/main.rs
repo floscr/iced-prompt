@@ -301,6 +301,7 @@ impl Application for LoadingState {
         let content: Element<_> = match cmds_column {
             Some(el) => scrollable(row![el])
                 .on_scroll(Message::OnScroll)
+                .style(crate::gui::style::Scrollable::Default)
                 .height(Length::Fill)
                 .direction(scrollable::Direction::Vertical(
                     scrollable::Properties::new()
