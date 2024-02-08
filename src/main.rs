@@ -205,10 +205,14 @@ impl Application for LoadingState {
                 }
                 Message::Submit => {
                     let history = &state.history;
+                    let filter = &state.filter;
 
                     if let Some(cmds) = history.head() {
                         let id = match &state.selection {
-                            Selection::Initial => cmds.items.order[0],
+                            Selection::Initial => {
+                                let order = filter.clone().unwrap_or(cmds.items.order);
+                                order[0]
+                            }
                             Selection::Selected(selected_id) => *selected_id,
                         };
 
