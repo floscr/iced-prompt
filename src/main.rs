@@ -85,7 +85,10 @@ impl State {
         self.input_value = "".to_string();
         self.history = history;
 
-        scrollable::snap_to(SCROLLABLE_ID.clone(), RelativeOffset::START)
+        iced::Command::batch(vec![
+            text_input::focus(INPUT_ID.clone()),
+            scrollable::snap_to(SCROLLABLE_ID.clone(), RelativeOffset::START),
+        ])
     }
 }
 
