@@ -232,7 +232,7 @@ impl scrollable::StyleSheet for Scrollable {
                     r: 1.,
                     g: 1.,
                     b: 1.,
-                    a: 0.25,
+                    a: 0.05,
                 },
                 border_radius: BorderRadius::from(100.),
                 border_width: 0.0,
@@ -244,30 +244,25 @@ impl scrollable::StyleSheet for Scrollable {
     fn hovered(&self, style: &Self::Style, is_mouse_over_scrollbar: bool) -> scrollable::Scrollbar {
         let active = self.active(style);
 
-        active
+        let scroller = if is_mouse_over_scrollbar {
+            scrollable::Scroller {
+                color: Color {
+                    r: 1.,
+                    g: 1.,
+                    b: 1.,
+                    a: 0.1,
+                },
+                ..active.scroller
+            }
+        } else {
+            active.scroller
+        };
 
-        // scrollable::Scrollbar {
-        //     background: Color { a: 0.5, ..SURFACE }.into(),
-        //     scroller: scrollable::Scroller {
-        //         color: HOVERED,
-        //         ..active.scroller
-        //     },
-        //     ..active
-        // }
+        scrollable::Scrollbar { scroller, ..active }
     }
 
     fn dragging(&self, style: &Self::Style) -> scrollable::Scrollbar {
-        let hovered = self.hovered(style, true);
-
-        hovered
-
-        // scrollable::Scrollbar {
-        //     scroller: scrollable::Scroller {
-        //         color: Color::from_rgb(0.85, 0.85, 0.85),
-        //         ..hovered.scroller
-        //     },
-        //     ..hovered
-        // }
+        self.hovered(style, true)
     }
 }
 
