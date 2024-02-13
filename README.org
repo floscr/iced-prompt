@@ -1,10 +1,12 @@
 #+title: Iced Prompt
 
-An attempt at building an interactive system prompt for launching applications, workflows etc.
+A command prompt built with iced.
 
-[[./github/demo-01.mp4][demo]]
+https://github.com/floscr/iced-prompt/assets/1898374/b5f0585a-8fbd-49cf-9403-59a79e26cdbd
 
+Very much in progress, documented with some blog posts:
 
+https://florianschroedl.com/blog/iced-prompt-project-01
 
 ** Inspiration
 
