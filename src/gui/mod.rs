@@ -27,7 +27,7 @@ use style::{footer_container_style, get_svg_style};
 static SCROLLABLE_ID: Lazy<scrollable::Id> = Lazy::new(scrollable::Id::unique);
 static INPUT_ID: Lazy<text_input::Id> = Lazy::new(text_input::Id::unique);
 
-pub fn main() -> iced::Result {
+pub fn main(cmd: Command) -> iced::Result {
     LoadingState::run(Settings {
         window: window::Settings {
             size: (700, 500),
@@ -38,6 +38,7 @@ pub fn main() -> iced::Result {
             level: Level::AlwaysOnTop,
             ..window::Settings::default()
         },
+        flags: ApplicationFlags { cmd },
         default_font: fonts::ROBOTO,
         antialiasing: true,
         ..Settings::default()
@@ -103,23 +104,24 @@ impl iced::application::StyleSheet for ApplicationStyle {
     }
 }
 
+#[derive(Default)]
+struct ApplicationFlags {
+    cmd: Command,
+}
+
 impl Application for LoadingState {
     type Message = Message;
     type Theme = Theme;
     type Executor = iced::executor::Default;
-    type Flags = ();
+    type Flags = ApplicationFlags;
 
     fn theme(&self) -> Theme {
         Theme::Dark
     }
 
-    fn new(_flags: ()) -> (LoadingState, iced::Command<Message>) {
-        let data = include_str!("../../data/user_friendly_simple.json");
-
-        let cmd: Command = serde_json::from_str(data).unwrap();
-
+    fn new(flags: ApplicationFlags) -> (LoadingState, iced::Command<Message>) {
         let state = State {
-            history: History::default().push(cmd),
+            history: History::default().push(flags.cmd),
             ..State::default()
         };
         (
