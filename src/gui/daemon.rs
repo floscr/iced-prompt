@@ -1,32 +1,41 @@
-use std::{
-    process::{exit, Command},
-    thread::sleep,
-    time::Duration,
-};
+use nix::sys::signal::{SigSet, SigmaskHow, Signal};
+use nix::unistd::{fork, setsid, ForkResult};
+use std::io;
+use std::os::unix::process::CommandExt;
+use std::process::{self, Stdio};
 
-use nix::{
-    sys::wait::waitpid,
-    unistd::{fork, ForkResult},
-};
+/// Spawn unsupervised daemons.
+///
+/// This function double-forks to avoid spawning zombies and launches a program with arguments.
+pub fn exec(program: &str, args: &[&str]) -> io::Result<()> {
+    let mut command = process::Command::new(program);
+    command.args(args);
+    command.stdin(Stdio::null());
+    command.stdout(Stdio::null());
+    command.stderr(Stdio::null());
 
-pub fn exec(program: String) {
-    match unsafe { fork() }.expect("Failed to fork process") {
-        ForkResult::Parent { child } => {
-            println!("Try to kill me to check if the target process will be killed");
+    unsafe {
+        command.pre_exec(|| {
+            // Perform second fork.
+            match fork() {
+                Ok(ForkResult::Parent { .. }) => std::process::exit(0),
+                Ok(ForkResult::Child) => (),
+                Err(_) => return Err(io::Error::last_os_error()),
+            }
 
-            // Do not forget to wait for the fork in order to prevent it from becoming a zombie!!!
-            waitpid(Some(child), None).unwrap();
+            if setsid().is_err() {
+                return Err(io::Error::last_os_error());
+            }
 
-            // You have 120 seconds to kill the process :)
-            // sleep(Duration::from_secs(120));
-        }
+            // Reset signal handlers.
+            let mut signal_set = SigSet::empty();
+            signal_set.thread_block();
 
-        ForkResult::Child => {
-            let _ = nix::unistd::setsid();
-            Command::new(program)
-                .spawn()
-                .expect("failed to spawn the target process");
-            exit(0);
-        }
+            Ok(())
+        });
     }
+
+    command.spawn()?.wait()?;
+
+    Ok(())
 }
