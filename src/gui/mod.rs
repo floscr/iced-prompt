@@ -228,13 +228,15 @@ impl Application for LoadingState {
                             }
                         };
 
-                        let command = cmds.items.items.get(&id);
-                        let result = command.and_then(Command::execute_action);
+                        let command = cmds.items.items.get(&id).unwrap().command_string();
+                        println!("{}", command);
 
-                        if let Some(cmd) = result {
-                            let next_history = history.clone().push(cmd);
-                            return state.navigate(next_history);
-                        }
+                        // let result = command.and_then(Command::execute_action);
+
+                        // if let Some(cmd) = result {
+                        //     let next_history = history.clone().push(cmd);
+                        //     return state.navigate(next_history);
+                        // }
 
                         std::process::exit(1);
                     }

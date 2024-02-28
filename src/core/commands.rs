@@ -370,6 +370,13 @@ impl Command {
         offset
     }
 
+    pub fn command_string(&self) -> String {
+        match &self.kind {
+            CommandKind::Initial => self.value.clone(),
+            CommandKind::Shell(shell_command) => shell_command.command.clone(),
+        }
+    }
+
     pub fn execute(&self) -> Result<String, CommandResultError> {
         match &self.kind {
             CommandKind::Initial => Ok(self.value.clone()),
