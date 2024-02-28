@@ -16,7 +16,7 @@ pub const SIMPLE_CMD_HEIGHT: f32 = 28.;
 // Types -----------------------------------------------------------------------
 
 #[derive(Deserialize, Default, Debug, Clone, Eq, PartialEq)]
-pub struct ShellCommandProperties {
+pub struct ShellProperties {
     pub command: String,
 }
 
@@ -24,7 +24,7 @@ pub struct ShellCommandProperties {
 pub enum CommandKind {
     #[default]
     Initial,
-    SyncShellCommand(ShellCommandProperties),
+    Shell(ShellProperties),
     // Error(CommandError),
 }
 
@@ -69,7 +69,7 @@ mod type_tests {
     use std::collections::HashMap;
     use uuid::Uuid;
 
-    use super::{ActionKind, Command, CommandKind, Items, ShellCommandProperties};
+    use super::{ActionKind, Command, CommandKind, Items, ShellProperties};
 
     #[test]
     pub fn it_works() {
@@ -83,9 +83,7 @@ mod type_tests {
                         command_uuid,
                         Command {
                             value: s!("ls"),
-                            kind: CommandKind::SyncShellCommand(ShellCommandProperties {
-                                command: s!("ls"),
-                            }),
+                            kind: CommandKind::Shell(ShellProperties { command: s!("ls") }),
                             action: ActionKind::Next,
                             ..Command::default()
                         },
@@ -94,9 +92,7 @@ mod type_tests {
                         command_uuid,
                         Command {
                             value: s!("ls"),
-                            kind: CommandKind::SyncShellCommand(ShellCommandProperties {
-                                command: s!("ls"),
-                            }),
+                            kind: CommandKind::Shell(ShellProperties { command: s!("ls") }),
                             action: ActionKind::Exit,
                             ..Command::default()
                         },
@@ -144,13 +140,13 @@ impl<'de> Deserialize<'de> for CommandKind {
                 while let Some(key) = map.next_key::<String>()? {
                     if key == "shell" {
                         let command: String = map.next_value()?;
-                        shell_command = Some(ShellCommandProperties { command });
+                        shell_command = Some(ShellProperties { command });
                     } else {
                         let _: serde::de::IgnoredAny = map.next_value()?;
                     }
                 }
 
-                Ok(shell_command.map_or(CommandKind::Initial, CommandKind::SyncShellCommand))
+                Ok(shell_command.map_or(CommandKind::Initial, CommandKind::Shell))
             }
         }
 
@@ -167,7 +163,7 @@ where
 {
     let obj = Value::deserialize(deserializer)?;
     match obj {
-        Value::String(shell_string) => Ok(CommandKind::SyncShellCommand(ShellCommandProperties {
+        Value::String(shell_string) => Ok(CommandKind::Shell(ShellProperties {
             command: shell_string.to_owned(),
         })),
         _ => Ok(CommandKind::Initial),
@@ -212,7 +208,7 @@ impl<'de> Deserialize<'de> for Items<Command> {
 
 #[cfg(test)]
 mod deserialize_tests {
-    use super::{Command, CommandKind, ShellCommandProperties};
+    use super::{Command, CommandKind, ShellProperties};
     use crate::s;
 
     #[test]
@@ -239,7 +235,7 @@ mod deserialize_tests {
         assert_eq!(cmd.value, "List files: ~");
         assert_eq!(
             cmd.kind,
-            CommandKind::SyncShellCommand(ShellCommandProperties {
+            CommandKind::Shell(ShellProperties {
                 command: s!("bb ./scripts/src/file_explorer.clj ~")
             })
         );
@@ -264,9 +260,7 @@ mod deserialize_tests {
 // Impl ------------------------------------------------------------------------
 
 impl CommandKind {
-    pub fn sync_execute(
-        shell_command: ShellCommandProperties,
-    ) -> Result<String, CommandResultError> {
+    pub fn sync_execute(shell_command: ShellProperties) -> Result<String, CommandResultError> {
         let output = process::Command::new("sh")
             .arg("-c")
             .arg(shell_command.command)
@@ -379,9 +373,7 @@ impl Command {
     pub fn execute(&self) -> Result<String, CommandResultError> {
         match &self.kind {
             CommandKind::Initial => Ok(self.value.clone()),
-            CommandKind::SyncShellCommand(shell_command) => {
-                CommandKind::sync_execute(shell_command.clone())
-            }
+            CommandKind::Shell(shell_command) => CommandKind::sync_execute(shell_command.clone()),
         }
     }
 
@@ -419,9 +411,7 @@ mod command_tests {
     use std::collections::HashMap;
     use uuid::Uuid;
 
-    use super::{
-        ActionKind, Command, CommandKind, CommandResultError, Items, ShellCommandProperties,
-    };
+    use super::{ActionKind, Command, CommandKind, CommandResultError, Items, ShellProperties};
 
     fn make_test_command() -> Command {
         let command_a_uuid = Uuid::new_v4();
@@ -435,9 +425,7 @@ mod command_tests {
                         command_a_uuid,
                         Command {
                             value: s!("ls"),
-                            kind: CommandKind::SyncShellCommand(ShellCommandProperties {
-                                command: s!("ls"),
-                            }),
+                            kind: CommandKind::Shell(ShellProperties { command: s!("ls") }),
                             action: ActionKind::Next,
                             ..Command::default()
                         },
@@ -446,9 +434,7 @@ mod command_tests {
                         command_b_uuid,
                         Command {
                             value: s!("pwd"),
-                            kind: CommandKind::SyncShellCommand(ShellCommandProperties {
-                                command: s!("pwd"),
-                            }),
+                            kind: CommandKind::Shell(ShellProperties { command: s!("pwd") }),
                             action: ActionKind::Exit,
                             ..Command::default()
                         },
@@ -457,9 +443,7 @@ mod command_tests {
                         command_b_uuid,
                         Command {
                             value: s!("pwd"),
-                            kind: CommandKind::SyncShellCommand(ShellCommandProperties {
-                                command: s!("pwd"),
-                            }),
+                            kind: CommandKind::Shell(ShellProperties { command: s!("pwd") }),
                             action: ActionKind::Exit,
                             ..Command::default()
                         },
@@ -495,7 +479,7 @@ mod command_tests {
     fn execute_successful_command() {
         let command = Command {
             value: s!("Success"),
-            kind: CommandKind::SyncShellCommand(ShellCommandProperties {
+            kind: CommandKind::Shell(ShellProperties {
                 command: s!("echo \"Success\""),
             }),
             ..Command::default()
@@ -511,7 +495,7 @@ mod command_tests {
     fn execute_failing_command() {
         let command = Command {
             value: s!("Fail"),
-            kind: CommandKind::SyncShellCommand(ShellCommandProperties {
+            kind: CommandKind::Shell(ShellProperties {
                 command: s!("echo \"Fail\"; exit 1"),
             }),
             ..Command::default()
