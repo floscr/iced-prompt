@@ -235,7 +235,7 @@ impl Application for LoadingState {
 
                         let command = cmds.items.items.get(&id).unwrap().command_string();
 
-                        daemon::exec(&command, &[]);
+                        daemon::exec(&command);
 
                         // println!("{}", command);
 
