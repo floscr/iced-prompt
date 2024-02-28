@@ -20,3 +20,6 @@ levenshtein = "1.0.5"
 clap = { version = "4.5.1", features = ["derive"] }
 shellexpand = "3.1.0"
 dirs = "5.0.1"
+subprocess = "0.2.9"
+fork = "0.1.23"
+nix = { version = "0.28.0", features = ["process"] }

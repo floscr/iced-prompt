@@ -1,3 +1,12 @@
+pub mod colors;
+pub mod daemon;
+pub mod fonts;
+pub mod icons;
+pub mod style;
+
+use std::process::{self, Stdio};
+
+use fork::Fork;
 use iced::keyboard::{KeyCode, Modifiers};
 use iced::theme::Theme;
 use iced::widget::scrollable::{AbsoluteOffset, RelativeOffset, Viewport};
@@ -11,12 +20,8 @@ use iced::{Application, Element};
 use iced::{Length, Settings, Subscription};
 
 use once_cell::sync::Lazy;
+use subprocess::Exec;
 use uuid::Uuid;
-
-pub mod colors;
-pub mod fonts;
-pub mod icons;
-pub mod style;
 
 use crate::core::commands::{Command, SIMPLE_CMD_HEIGHT};
 use crate::core::history::History;
@@ -229,7 +234,21 @@ impl Application for LoadingState {
                         };
 
                         let command = cmds.items.items.get(&id).unwrap().command_string();
-                        println!("{}", command);
+
+                        daemon::exec(command);
+
+                        // println!("{}", command);
+
+                        // let output = process::Command::new("sh").arg("-c").arg(command).spawn();
+                        // let _ = Exec::shell("sh").arg("-c").arg(command).detached().popen();
+
+                        // if let Ok(Fork::Child) = daemon(true, true) {
+                        //     process::Command::new(command)
+                        //         .output()
+                        //         .expect("failed to execute process");
+                        // }
+
+                        std::process::exit(1);
 
                         // let result = command.and_then(Command::execute_action);
 
@@ -237,8 +256,6 @@ impl Application for LoadingState {
                         //     let next_history = history.clone().push(cmd);
                         //     return state.navigate(next_history);
                         // }
-
-                        std::process::exit(1);
                     }
                     iced::Command::none()
                 }
