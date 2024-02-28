@@ -1,4 +1,4 @@
-use nix::sys::signal::{SigSet, SigmaskHow, Signal};
+use nix::sys::signal::SigSet;
 use nix::unistd::{fork, setsid, ForkResult};
 use std::io;
 use std::os::unix::process::CommandExt;
@@ -28,8 +28,8 @@ pub fn exec(program: &str, args: &[&str]) -> io::Result<()> {
             }
 
             // Reset signal handlers.
-            let mut signal_set = SigSet::empty();
-            signal_set.thread_block();
+            let signal_set = SigSet::empty();
+            let _ = signal_set.thread_block();
 
             Ok(())
         });
