@@ -30,21 +30,21 @@ static SCROLLABLE_ID: Lazy<scrollable::Id> = Lazy::new(scrollable::Id::unique);
 static INPUT_ID: Lazy<text_input::Id> = Lazy::new(text_input::Id::unique);
 
 #[derive(Debug)]
-pub enum MyError {
+pub enum AppError {
     Iced(iced::Error),
     NoCommandFound,
 }
 
-impl fmt::Display for MyError {
+impl fmt::Display for AppError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            MyError::Iced(err) => write!(f, "Iced error: {}", err),
-            MyError::NoCommandFound => write!(f, "No command found"),
+            AppError::Iced(err) => write!(f, "Iced error: {}", err),
+            AppError::NoCommandFound => write!(f, "No command found"),
         }
     }
 }
 
-pub fn main(cmd: Command) -> Result<Command, MyError> {
+pub fn main(cmd: Command) -> Result<Command, AppError> {
     let result = Arc::new(Mutex::new(None));
 
     let window_result = LoadingState::run(Settings {
@@ -73,9 +73,9 @@ pub fn main(cmd: Command) -> Result<Command, MyError> {
     match window_result {
         Ok(_) => match cmd {
             Some(c) => Ok(c),
-            None => Err(MyError::NoCommandFound),
+            None => Err(AppError::NoCommandFound),
         },
-        Err(err) => Err(MyError::Iced(err)),
+        Err(err) => Err(AppError::Iced(err)),
     }
 }
 
