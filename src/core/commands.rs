@@ -45,9 +45,16 @@ pub struct Items<T> {
 pub enum ActionKind {
     #[default]
     #[serde(alias = "exit")]
+    // Exit and execute command asynchronously
     Exit,
     #[serde(alias = "next")]
+    // Execute command command and use output in next history state
+    // This is always async
     Next,
+    #[serde(alias = "print")]
+    // Close window & print output this action will always execute synchronously
+    // as the command is the main process
+    Print,
 }
 
 #[derive(Deserialize, Default, Debug, Clone, Eq, PartialEq)]
