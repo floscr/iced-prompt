@@ -274,7 +274,9 @@ impl Application for LoadingState {
                                             let next_history = history.clone().push(result);
                                             state.navigate(next_history)
                                         } else {
-                                            std::process::exit(1);
+                                            todo!(
+                                                "Error handling for failed Action: Next with error"
+                                            )
                                         }
                                     }
                                     _ => {
