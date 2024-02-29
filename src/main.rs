@@ -15,7 +15,7 @@ struct Cli {
     json: Option<String>,
 }
 
-fn main() -> () {
+fn main() {
     let cli = Cli::parse();
 
     let config_path = cli
@@ -27,10 +27,12 @@ fn main() -> () {
 
     match gui::main(command) {
         Ok(cmd) => {
-            daemon::exec(cmd.command_string());
+            let _ = daemon::exec(cmd.command_string());
+            std::process::exit(0);
         }
         Err(err) => {
             println!("{}", err);
+            std::process::exit(1);
         }
     };
 }
