@@ -395,7 +395,7 @@ impl Command {
         let result = self.execute();
 
         match &self.action {
-            ActionKind::Exit => {
+            ActionKind::Print | ActionKind::Exit => {
                 match result {
                     Ok(output) => {
                         println!("{:#?}", output);

@@ -7,9 +7,9 @@ use std::process::{self, Stdio};
 /// Spawn unsupervised daemons.
 ///
 /// This function double-forks to avoid spawning zombies and launches a program with arguments.
-pub fn exec(program: &str) -> io::Result<()> {
+pub fn exec(program: String) -> io::Result<()> {
     let mut command = process::Command::new("sh");
-    command.args(["-c", program]);
+    command.args(["-c", &program]);
     command.stdin(Stdio::null());
     command.stdout(Stdio::null());
     command.stderr(Stdio::null());

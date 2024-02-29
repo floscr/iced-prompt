@@ -13,6 +13,7 @@ use iced::widget::scrollable::{AbsoluteOffset, RelativeOffset, Viewport};
 use iced::widget::{
     button, column, container, horizontal_rule, row, scrollable, svg, text, text_input,
 };
+use std::sync::{Arc, Mutex};
 
 use iced::window::{self, Level};
 use iced::{font, subscription, Alignment, Event, Padding};
@@ -32,8 +33,10 @@ use style::{footer_container_style, get_svg_style};
 static SCROLLABLE_ID: Lazy<scrollable::Id> = Lazy::new(scrollable::Id::unique);
 static INPUT_ID: Lazy<text_input::Id> = Lazy::new(text_input::Id::unique);
 
-pub fn main(cmd: Command) -> iced::Result {
-    LoadingState::run(Settings {
+pub fn main(cmd: Command) -> String {
+    let result = Arc::new(Mutex::new(String::from("No")));
+
+    let res = LoadingState::run(Settings {
         window: window::Settings {
             size: (700, 500),
             position: window::Position::Centered,
@@ -43,11 +46,25 @@ pub fn main(cmd: Command) -> iced::Result {
             level: Level::AlwaysOnTop,
             ..window::Settings::default()
         },
-        flags: ApplicationFlags { cmd },
+        exit_on_close_request: true,
+        flags: ApplicationFlags {
+            cmd,
+            result: result.clone(),
+        },
         default_font: fonts::ROBOTO,
         antialiasing: true,
         ..Settings::default()
-    })
+    });
+    let mut result_lock = result.lock().unwrap();
+
+    // println!("{:#?}", result.lock().unwrap().clone());
+    let cmd = result_lock.clone();
+
+    daemon::exec(cmd);
+
+    String::from("No")
+    // let command = result.lock().unwrap();
+    // *command
 }
 
 #[derive(Debug, Default)]
@@ -64,6 +81,7 @@ struct State {
     filter: Option<Vec<Uuid>>,
     selection: Selection,
     scrollable_offset: AbsoluteOffset,
+    result: Arc<Mutex<String>>,
 }
 
 #[derive(Debug)]
@@ -81,6 +99,7 @@ enum Message {
     OnScroll(Viewport),
     HistoryBackwards,
     FontLoaded(Result<(), font::Error>),
+    ExecuteAndExit(String),
 }
 
 impl State {
@@ -112,6 +131,7 @@ impl iced::application::StyleSheet for ApplicationStyle {
 #[derive(Default)]
 struct ApplicationFlags {
     cmd: Command,
+    result: Arc<Mutex<String>>,
 }
 
 impl Application for LoadingState {
@@ -127,6 +147,7 @@ impl Application for LoadingState {
     fn new(flags: ApplicationFlags) -> (LoadingState, iced::Command<Message>) {
         let state = State {
             history: History::default().push(flags.cmd),
+            result: flags.result.clone(),
             ..State::default()
         };
         (
@@ -216,48 +237,66 @@ impl Application for LoadingState {
                         ),
                     }
                 }
+                // Message::ExecuteAndExit(command) => {
+                //     let _ = ;
+                //     // iced::Command::none()
+                //     iced::Command::batch([window::close()])
+                // }
                 Message::Submit(maybe_id) => {
                     let history = &state.history;
                     let filter = &state.filter;
 
-                    if let Some(cmds) = history.head() {
-                        let id = if let Some(maybe_id) = maybe_id {
-                            maybe_id
-                        } else {
-                            match &state.selection {
-                                Selection::Initial => {
-                                    let order = filter.clone().unwrap_or(cmds.items.order);
-                                    order[0]
+                    match history.head() {
+                        Some(cmds) => {
+                            let id = if let Some(maybe_id) = maybe_id {
+                                maybe_id
+                            } else {
+                                match &state.selection {
+                                    Selection::Initial => {
+                                        let order = filter.clone().unwrap_or(cmds.items.order);
+                                        order[0]
+                                    }
+                                    Selection::Selected(selected_id) => *selected_id,
                                 }
-                                Selection::Selected(selected_id) => *selected_id,
-                            }
-                        };
+                            };
 
-                        let command = cmds.items.items.get(&id).unwrap().command_string();
+                            let command = cmds.items.items.get(&id).unwrap().command_string();
 
-                        daemon::exec(&command);
+                            let mut result = state.result.lock().unwrap();
+                            *result = String::from(&command);
 
-                        // println!("{}", command);
+                            iced::Command::batch([
+                                // iced::Command::perform(
+                                //     async {
+                                //         daemon::exec(command);
+                                //     },
+                                //     |_| Message::ExecuteAndExit(String::from("foo")),
+                                // ),
+                                window::close(),
+                            ])
 
-                        // let output = process::Command::new("sh").arg("-c").arg(command).spawn();
-                        // let _ = Exec::shell("sh").arg("-c").arg(command).detached().popen();
+                            // println!("{}", command);
 
-                        // if let Ok(Fork::Child) = daemon(true, true) {
-                        //     process::Command::new(command)
-                        //         .output()
-                        //         .expect("failed to execute process");
-                        // }
+                            // let output = process::Command::new("sh").arg("-c").arg(command).spawn();
+                            // let _ = Exec::shell("sh").arg("-c").arg(command).detached().popen();
 
-                        std::process::exit(1);
+                            // if let Ok(Fork::Child) = daemon(true, true) {
+                            //     process::Command::new(command)
+                            //         .output()
+                            //         .expect("failed to execute process");
+                            // }
 
-                        // let result = command.and_then(Command::execute_action);
+                            // std::process::exit(1);
 
-                        // if let Some(cmd) = result {
-                        //     let next_history = history.clone().push(cmd);
-                        //     return state.navigate(next_history);
-                        // }
+                            // let result = command.and_then(Command::execute_action);
+
+                            // if let Some(cmd) = result {
+                            //     let next_history = history.clone().push(cmd);
+                            //     return state.navigate(next_history);
+                            // }
+                        }
+                        _ => iced::Command::none(),
                     }
-                    iced::Command::none()
                 }
                 Message::Exit(exit_code) => std::process::exit(exit_code),
                 _ => iced::Command::none(),

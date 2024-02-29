@@ -15,7 +15,7 @@ struct Cli {
     json: Option<String>,
 }
 
-fn main() -> iced::Result {
+fn main() -> () {
     let cli = Cli::parse();
 
     let config_path = cli
@@ -25,5 +25,6 @@ fn main() -> iced::Result {
 
     let command: Command = serde_json::from_str(&json_string).expect("Unable to parse json");
 
-    gui::main(command)
+    let s = gui::main(command);
+    println!("{}", s)
 }
