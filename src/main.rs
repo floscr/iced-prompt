@@ -1,6 +1,7 @@
 use std::fs;
 
 use clap::Parser;
+use gui::daemon;
 
 pub mod core;
 pub mod gui;
@@ -15,7 +16,7 @@ struct Cli {
     json: Option<String>,
 }
 
-fn main() -> iced::Result {
+fn main() -> () {
     let cli = Cli::parse();
 
     let config_path = cli
@@ -25,5 +26,12 @@ fn main() -> iced::Result {
 
     let command: Command = serde_json::from_str(&json_string).expect("Unable to parse json");
 
-    gui::main(command)
+    match gui::main(command) {
+        Ok(cmd) => {
+            daemon::exec(cmd.command_string());
+        }
+        Err(err) => {
+            println!("{}", err);
+        }
+    };
 }

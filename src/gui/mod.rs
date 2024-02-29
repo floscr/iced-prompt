@@ -4,6 +4,7 @@ pub mod fonts;
 pub mod icons;
 pub mod style;
 
+use core::fmt;
 use iced::keyboard::{KeyCode, Modifiers};
 use iced::theme::Theme;
 use iced::widget::scrollable::{AbsoluteOffset, RelativeOffset, Viewport};
@@ -13,7 +14,7 @@ use iced::widget::{
 use std::sync::{Arc, Mutex};
 
 use iced::window::{self, Level};
-use iced::{font, subscription, Alignment, Event, Padding};
+use iced::{font, subscription, Alignment, Error, Event, Padding};
 use iced::{Application, Element};
 use iced::{Length, Settings, Subscription};
 
@@ -29,8 +30,23 @@ use style::{footer_container_style, get_svg_style};
 static SCROLLABLE_ID: Lazy<scrollable::Id> = Lazy::new(scrollable::Id::unique);
 static INPUT_ID: Lazy<text_input::Id> = Lazy::new(text_input::Id::unique);
 
-pub fn main(cmd: Command) -> iced::Result {
-    let result = Arc::new(Mutex::new(String::from("No")));
+#[derive(Debug)]
+pub enum MyError {
+    Iced(iced::Error),
+    NoCommandFound,
+}
+
+impl fmt::Display for MyError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            MyError::Iced(err) => write!(f, "Iced error: {}", err),
+            MyError::NoCommandFound => write!(f, "No command found"),
+        }
+    }
+}
+
+pub fn main(cmd: Command) -> Result<Command, MyError> {
+    let result = Arc::new(Mutex::new(None));
 
     let window_result = LoadingState::run(Settings {
         window: window::Settings {
@@ -54,9 +70,14 @@ pub fn main(cmd: Command) -> iced::Result {
 
     let result_lock = result.lock().unwrap();
     let cmd = result_lock.clone();
-    let _ = daemon::exec(cmd);
 
-    window_result
+    match window_result {
+        Ok(_) => match cmd {
+            Some(c) => Ok(c),
+            None => Err(MyError::NoCommandFound),
+        },
+        Err(err) => Err(MyError::Iced(err)),
+    }
 }
 
 #[derive(Debug, Default)]
@@ -73,7 +94,7 @@ struct State {
     filter: Option<Vec<Uuid>>,
     selection: Selection,
     scrollable_offset: AbsoluteOffset,
-    result: Arc<Mutex<String>>,
+    result: Arc<Mutex<Option<Command>>>,
 }
 
 #[derive(Debug)]
@@ -122,7 +143,7 @@ impl iced::application::StyleSheet for ApplicationStyle {
 #[derive(Default)]
 struct ApplicationFlags {
     cmd: Command,
-    result: Arc<Mutex<String>>,
+    result: Arc<Mutex<Option<Command>>>,
 }
 
 impl Application for LoadingState {
@@ -246,10 +267,10 @@ impl Application for LoadingState {
                                 }
                             };
 
-                            let command = cmds.items.items.get(&id).unwrap().command_string();
+                            let command = cmds.items.items.get(&id);
 
                             let mut result = state.result.lock().unwrap();
-                            *result = String::from(&command);
+                            *result = command.map(|x| x.clone());
 
                             window::close()
                         }
