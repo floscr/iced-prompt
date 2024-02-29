@@ -4,9 +4,6 @@ pub mod fonts;
 pub mod icons;
 pub mod style;
 
-use std::process::{self, Stdio};
-
-use fork::Fork;
 use iced::keyboard::{KeyCode, Modifiers};
 use iced::theme::Theme;
 use iced::widget::scrollable::{AbsoluteOffset, RelativeOffset, Viewport};
@@ -21,7 +18,6 @@ use iced::{Application, Element};
 use iced::{Length, Settings, Subscription};
 
 use once_cell::sync::Lazy;
-use subprocess::Exec;
 use uuid::Uuid;
 
 use crate::core::commands::{Command, SIMPLE_CMD_HEIGHT};
@@ -33,10 +29,10 @@ use style::{footer_container_style, get_svg_style};
 static SCROLLABLE_ID: Lazy<scrollable::Id> = Lazy::new(scrollable::Id::unique);
 static INPUT_ID: Lazy<text_input::Id> = Lazy::new(text_input::Id::unique);
 
-pub fn main(cmd: Command) -> String {
+pub fn main(cmd: Command) -> iced::Result {
     let result = Arc::new(Mutex::new(String::from("No")));
 
-    let res = LoadingState::run(Settings {
+    let window_result = LoadingState::run(Settings {
         window: window::Settings {
             size: (700, 500),
             position: window::Position::Centered,
@@ -55,16 +51,12 @@ pub fn main(cmd: Command) -> String {
         antialiasing: true,
         ..Settings::default()
     });
-    let mut result_lock = result.lock().unwrap();
 
-    // println!("{:#?}", result.lock().unwrap().clone());
+    let result_lock = result.lock().unwrap();
     let cmd = result_lock.clone();
+    let _ = daemon::exec(cmd);
 
-    daemon::exec(cmd);
-
-    String::from("No")
-    // let command = result.lock().unwrap();
-    // *command
+    window_result
 }
 
 #[derive(Debug, Default)]
@@ -99,7 +91,6 @@ enum Message {
     OnScroll(Viewport),
     HistoryBackwards,
     FontLoaded(Result<(), font::Error>),
-    ExecuteAndExit(String),
 }
 
 impl State {
@@ -237,11 +228,6 @@ impl Application for LoadingState {
                         ),
                     }
                 }
-                // Message::ExecuteAndExit(command) => {
-                //     let _ = ;
-                //     // iced::Command::none()
-                //     iced::Command::batch([window::close()])
-                // }
                 Message::Submit(maybe_id) => {
                     let history = &state.history;
                     let filter = &state.filter;
@@ -265,35 +251,7 @@ impl Application for LoadingState {
                             let mut result = state.result.lock().unwrap();
                             *result = String::from(&command);
 
-                            iced::Command::batch([
-                                // iced::Command::perform(
-                                //     async {
-                                //         daemon::exec(command);
-                                //     },
-                                //     |_| Message::ExecuteAndExit(String::from("foo")),
-                                // ),
-                                window::close(),
-                            ])
-
-                            // println!("{}", command);
-
-                            // let output = process::Command::new("sh").arg("-c").arg(command).spawn();
-                            // let _ = Exec::shell("sh").arg("-c").arg(command).detached().popen();
-
-                            // if let Ok(Fork::Child) = daemon(true, true) {
-                            //     process::Command::new(command)
-                            //         .output()
-                            //         .expect("failed to execute process");
-                            // }
-
-                            // std::process::exit(1);
-
-                            // let result = command.and_then(Command::execute_action);
-
-                            // if let Some(cmd) = result {
-                            //     let next_history = history.clone().push(cmd);
-                            //     return state.navigate(next_history);
-                            // }
+                            window::close()
                         }
                         _ => iced::Command::none(),
                     }
