@@ -1,5 +1,4 @@
 pub mod colors;
-pub mod daemon;
 pub mod fonts;
 pub mod icons;
 pub mod style;

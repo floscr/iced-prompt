@@ -1,13 +1,12 @@
 use std::fs;
 
 use clap::Parser;
-use gui::daemon;
 
 pub mod core;
 pub mod gui;
 pub mod utils;
 
-use core::commands::Command;
+use core::{commands::Command, daemon};
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
