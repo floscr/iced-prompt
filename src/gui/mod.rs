@@ -13,7 +13,7 @@ use iced::widget::{
 use std::sync::{Arc, Mutex};
 
 use iced::window::{self, Level};
-use iced::{font, subscription, Alignment, Error, Event, Padding};
+use iced::{font, subscription, Alignment, Event, Padding};
 use iced::{Application, Element};
 use iced::{Length, Settings, Subscription};
 
@@ -268,7 +268,7 @@ impl Application for LoadingState {
                             let command = cmds.items.items.get(&id);
 
                             let mut result = state.result.lock().unwrap();
-                            *result = command.map(|x| x.clone());
+                            *result = command.cloned();
 
                             window::close()
                         }
