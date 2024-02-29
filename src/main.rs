@@ -1,4 +1,4 @@
-use std::fs;
+use std::{fs, process};
 
 use clap::Parser;
 
@@ -27,7 +27,20 @@ fn main() {
 
     match gui::main(command) {
         Ok(cmd) => {
-            let _ = daemon::exec(cmd.command_string());
+            match cmd.action {
+                core::commands::ActionKind::Exit => {
+                    let _ = daemon::exec(cmd.command_string());
+                }
+                core::commands::ActionKind::Print => {
+                    let output = process::Command::new("sh")
+                        .args(["-c", &cmd.command_string()])
+                        .output()
+                        .expect("Failed to execute command");
+                    println!("{}", String::from_utf8_lossy(&output.stdout));
+                }
+                _ => (),
+            }
+
             std::process::exit(0);
         }
         Err(err) => {

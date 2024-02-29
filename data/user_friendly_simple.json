@@ -5,6 +5,11 @@
       "value": "List files: ~",
       "shell": "bb ./scripts/src/file_explorer.clj ~",
       "action": "next"
+    },
+    {
+      "value": "Print Ls",
+      "shell": "ls",
+      "action": "print"
     }
   ]
 }
