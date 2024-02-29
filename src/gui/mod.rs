@@ -267,10 +267,26 @@ impl Application for LoadingState {
 
                             let command = cmds.items.items.get(&id);
 
-                            let mut result = state.result.lock().unwrap();
-                            *result = command.cloned();
+                            if let Some(cmd) = command {
+                                match cmd.action {
+                                    crate::core::commands::ActionKind::Next => {
+                                        if let Some(result) = Command::execute_action(cmd) {
+                                            let next_history = history.clone().push(result);
+                                            state.navigate(next_history)
+                                        } else {
+                                            std::process::exit(1);
+                                        }
+                                    }
+                                    _ => {
+                                        let mut result = state.result.lock().unwrap();
+                                        *result = command.cloned();
 
-                            window::close()
+                                        window::close()
+                                    }
+                                }
+                            } else {
+                                iced::Command::none()
+                            }
                         }
                         _ => iced::Command::none(),
                     }
