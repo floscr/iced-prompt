@@ -57,7 +57,6 @@ pub fn main(cmd: Command) -> Result<Command, AppError> {
             level: Level::AlwaysOnTop,
             ..window::Settings::default()
         },
-        exit_on_close_request: true,
         flags: ApplicationFlags {
             cmd,
             result: result.clone(),
