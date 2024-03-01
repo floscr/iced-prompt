@@ -8,8 +8,10 @@ use iced::keyboard::{KeyCode, Modifiers};
 use iced::theme::Theme;
 use iced::widget::scrollable::{AbsoluteOffset, RelativeOffset, Viewport};
 use iced::widget::{
-    button, column, container, horizontal_rule, row, scrollable, svg, text, text_input,
+    button, column, container, horizontal_rule, row, scrollable, svg, text, text_input, Row, Space,
+    Text,
 };
+use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
 use iced::window::{self, Level};
@@ -358,10 +360,25 @@ impl Application for LoadingState {
                 }
                 .map(|svg_icon| svg(svg_icon).width(20.).height(20.).style(get_svg_style()));
 
-                let button_content = match icon_element {
-                    Some(icon_el) => row![icon_el, text_value].spacing(5),
-                    _ => row![text_value],
-                };
+                let is_processing = state
+                    .jobs
+                    .get(id)
+                    .map_or(None, |_| Some(Text::new("LOADING")));
+
+                let mut row = Row::new();
+                if let Some(icon_el) = icon_element {
+                    row = row.push(icon_el).push(text_value).spacing(5);
+                } else {
+                    row = row.push(text_value);
+                }
+
+                if let Some(loading_text) = is_processing {
+                    row = row
+                        .push(Space::new(Length::Fill, Length::Shrink))
+                        .push(loading_text);
+                }
+
+                let button_content = row;
 
                 button(
                     container(button_content)
