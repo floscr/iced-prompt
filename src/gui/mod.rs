@@ -34,6 +34,8 @@ static INPUT_ID: Lazy<text_input::Id> = Lazy::new(text_input::Id::unique);
 pub enum AppError {
     Iced(iced::Error),
     NoCommandFound,
+    IOError(std::io::Error),
+    ShellResultParseError(serde_json::Error),
 }
 
 impl fmt::Display for AppError {
@@ -41,21 +43,36 @@ impl fmt::Display for AppError {
         match self {
             AppError::Iced(err) => write!(f, "Iced error: {}", err),
             AppError::NoCommandFound => write!(f, "No command found"),
+            AppError::IOError(err) => write!(f, "IOError: {}", err),
+            AppError::ShellResultParseError(err) => write!(f, "ShellResultParseError: {}", err),
         }
     }
 }
 
-fn execute(cmd: String) -> Result<String, std::io::Error> {
+fn execute(cmd: String) -> Result<String, AppError> {
     let output = std::process::Command::new("sh")
         .arg("-c")
         .arg(&cmd)
-        .output()?;
+        .output()
+        .map_err(AppError::IOError)?;
 
-    let stdout = String::from_utf8_lossy(&output.stdout)
-        .trim_end()
-        .to_owned();
-
-    Ok(stdout)
+    match output.status.success() {
+        true => {
+            let stdout = String::from_utf8_lossy(&output.stdout)
+                .trim_end()
+                .to_owned();
+            Ok(stdout)
+        }
+        false => {
+            let stderr = String::from_utf8_lossy(&output.stderr)
+                .trim_end()
+                .to_owned();
+            Err(AppError::IOError(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                stderr,
+            )))
+        }
+    }
 }
 
 pub fn main(cmd: Command) -> Result<Command, AppError> {
@@ -124,7 +141,7 @@ enum Message {
     OnScroll(Viewport),
     HistoryBackwards,
     FontLoaded(Result<(), font::Error>),
-    PushHistory(String),
+    PushHistory(Command),
 }
 
 impl State {
@@ -201,8 +218,7 @@ impl Application for LoadingState {
                 }
                 Message::PushHistory(command) => {
                     let history = &state.history;
-                    let result = parse_command_or_exit(&command).unwrap();
-                    let next_history = history.clone().push(result);
+                    let next_history = history.clone().push(command);
                     state.navigate(next_history)
                 }
                 Message::InputChanged(value) => {
@@ -306,12 +322,19 @@ impl Application for LoadingState {
                                     iced::Command::none()
                                 }
                                 CommandKind::Shell(shell_command) => {
-                                    println!("HEY");
-
                                     let cloned = shell_command.command.clone();
-
                                     iced::Command::perform(async { execute(cloned) }, |result| {
-                                        Message::PushHistory(result.unwrap())
+                                        let cmd: Result<Command, AppError> = result.and_then(|r| {
+                                            serde_json::from_str(&r)
+                                                .map_err(AppError::ShellResultParseError)
+                                        });
+                                        match cmd {
+                                            Ok(c) => Message::PushHistory(c),
+                                            Err(err) => {
+                                                println!("{:#?}", err);
+                                                std::process::exit(1);
+                                            }
+                                        }
                                     })
                                 }
                             }
