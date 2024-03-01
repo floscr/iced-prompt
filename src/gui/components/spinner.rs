@@ -19,11 +19,9 @@ pub enum Message {
 
 impl Circle {
     pub fn new(radius: f32) -> Self {
-        let mut timeline: Timeline<_> = Options::new(0.0, 30.0)
+        let mut timeline: Timeline<_> = Options::new(0.0, 3.0)
             .duration(Duration::from_secs(2))
-            .auto_reverse(true)
             .easing(easing::sine_ease())
-            .forever()
             .into();
         timeline.begin();
 
