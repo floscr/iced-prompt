@@ -237,7 +237,7 @@ mod deserialize_tests {
         let v: Command = serde_json::from_str(data).unwrap();
 
         assert_eq!(v.value, "Commands");
-        assert_eq!(v.items.order.len(), 1);
+        assert_eq!(v.items.order.len(), 2);
         let (_, cmd) = v.get_child_command_by_index(0).unwrap();
         assert_eq!(cmd.value, "List files: ~");
         assert_eq!(
