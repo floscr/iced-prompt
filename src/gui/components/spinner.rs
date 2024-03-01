@@ -1,25 +1,46 @@
-// For now, to implement a custom native widget you will need to add
-// `iced_native` and `iced_wgpu` to your dependencies.
-//
-// Then, you simply need to define your widget type and implement the
-// `iced_native::Widget` trait with the `iced_wgpu::Renderer`.
-//
-// Of course, you can choose to make the implementation renderer-agnostic,
-// if you wish to, by creating your own `Renderer` trait, which could be
-// implemented by `iced_wgpu` and other renderers.
-use iced::advanced::layout::{self, Layout};
-use iced::advanced::renderer;
-use iced::advanced::widget::{self, Widget};
-use iced::mouse;
+use anim::{easing, Options, Timeline};
+use iced::advanced::layout::{self, Layout, Node};
+use iced::advanced::widget::{self, Tree, Widget};
+use iced::advanced::{renderer, Clipboard, Shell};
+use iced::{event, mouse, time, Event, Point, Subscription};
 use iced::{Color, Element, Length, Rectangle, Size};
+use std::time::{Duration, Instant};
 
 pub struct Circle {
     radius: f32,
+    start_time: Instant,
+    timeline: Timeline<f32>,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum Message {
+    Tick(Instant),
 }
 
 impl Circle {
     pub fn new(radius: f32) -> Self {
-        Self { radius }
+        let mut timeline: Timeline<_> = Options::new(0.0, 30.0)
+            .duration(Duration::from_secs(2))
+            .auto_reverse(true)
+            .easing(easing::sine_ease())
+            .forever()
+            .into();
+        timeline.begin();
+
+        Self {
+            timeline,
+            radius,
+            start_time: Instant::now(),
+        }
+    }
+
+    pub fn update(&mut self, message: Message) -> Subscription<Message> {
+        match message {
+            Message::Tick(now) => {
+                self.timeline.update();
+                Subscription::none()
+            }
+        }
     }
 }
 
@@ -43,6 +64,22 @@ where
         layout::Node::new(Size::new(self.radius * 2.0, self.radius * 2.0))
     }
 
+    fn on_event(
+        &mut self,
+        tree: &mut Tree,
+        event: Event,
+        layout: Layout<'_>,
+        cursor: mouse::Cursor,
+        renderer: &Renderer,
+        clipboard: &mut dyn Clipboard,
+        shell: &mut Shell<'_, Message>,
+        _viewport: &Rectangle,
+    ) -> event::Status {
+        match event {
+            _ => event::Status::Ignored,
+        }
+    }
+
     fn draw(
         &self,
         _state: &widget::Tree,
@@ -53,10 +90,12 @@ where
         _cursor: mouse::Cursor,
         _viewport: &Rectangle,
     ) {
+        let size = self.timeline.value();
+
         renderer.fill_quad(
             renderer::Quad {
                 bounds: layout.bounds(),
-                border_radius: self.radius.into(),
+                border_radius: size.into(),
                 border_width: 0.0,
                 border_color: Color::TRANSPARENT,
             },

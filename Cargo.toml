@@ -23,3 +23,4 @@ dirs = "5.0.1"
 subprocess = "0.2.9"
 fork = "0.1.23"
 nix = { version = "0.28.0", features = ["process", "signal"] }
+anim = "0.1.4"

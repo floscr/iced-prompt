@@ -91,6 +91,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "anim"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "32fede9d6284975a86a5950bafc48cbc6eebfe38859546587bccd5e48d4e0421"
+dependencies = [
+ "anim-derive",
+ "dyn-clone",
+ "iced_native",
+ "parking_lot",
+]
+
+[[package]]
+name = "anim-derive"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ce39ef52c509edc1b7c9f6b0d2215349a071a87f944f49b2804ed0a3921ee098"
+dependencies = [
+ "proc-macro-crate",
+ "proc-macro2",
+ "proc-quote",
+ "syn 1.0.109",
+]
+
+[[package]]
 name = "anstream"
 version = "0.6.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -853,6 +877,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9ea835d29036a4087793836fa931b08837ad5e957da9e23886b29586fb9b6650"
 
 [[package]]
+name = "dyn-clone"
+version = "1.0.17"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0d6ef0072f8a535281e4876be788938b528e9a1d43900b82c2569af7da799125"
+
+[[package]]
 name = "equivalent"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1368,13 +1398,19 @@ version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c708807ec86f99dd729dc4d42db5239acf118cec14d3c5f57679dcfdbbc472b1"
 dependencies = [
- "iced_core",
- "iced_futures",
+ "iced_core 0.10.0",
+ "iced_futures 0.7.0",
  "iced_renderer",
  "iced_widget",
  "iced_winit",
  "thiserror",
 ]
+
+[[package]]
+name = "iced_core"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fafe4a5eeee85876f3bad347338456e0f3e7fcdc2381a5ce6c3ba2a60dd769bf"
 
 [[package]]
 name = "iced_core"
@@ -1392,13 +1428,24 @@ dependencies = [
 
 [[package]]
 name = "iced_futures"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a89fdde2cb9c5807d23f40230297122e480428c660ad7d0373e625cd0725afa1"
+dependencies = [
+ "futures",
+ "log",
+ "wasm-bindgen-futures",
+]
+
+[[package]]
+name = "iced_futures"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "14dab0054a9c7a1cbce227a8cd9ee4a094497b3d06094551ac6c1488d563802e"
 dependencies = [
  "async-std",
  "futures",
- "iced_core",
+ "iced_core 0.10.0",
  "log",
  "wasm-bindgen-futures",
  "wasm-timer",
@@ -1414,16 +1461,30 @@ dependencies = [
  "bytemuck",
  "glam",
  "half",
- "iced_core",
+ "iced_core 0.10.0",
  "log",
  "raw-window-handle",
  "thiserror",
 ]
 
 [[package]]
+name = "iced_native"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "35030736d160e88b79edddee7ab664a2f3ac6b4046608e298b4c853030e3cc06"
+dependencies = [
+ "iced_core 0.4.0",
+ "iced_futures 0.3.0",
+ "num-traits",
+ "twox-hash",
+ "unicode-segmentation",
+]
+
+[[package]]
 name = "iced_prompt"
 version = "0.1.0"
 dependencies = [
+ "anim",
  "async-std",
  "clap",
  "directories-next",
@@ -1462,8 +1523,8 @@ version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7c6c89853e1250c6fac82c5015fa2144517be9b33d4b8e456f10e198b23e28bd"
 dependencies = [
- "iced_core",
- "iced_futures",
+ "iced_core 0.10.0",
+ "iced_futures 0.7.0",
  "thiserror",
 ]
 
@@ -1473,7 +1534,7 @@ version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d85c47d9d13e2281f75ddf98c865daf2101632bd2b855c401dd0b1c8b81a31a0"
 dependencies = [
- "iced_core",
+ "iced_core 0.10.0",
  "once_cell",
  "palette",
 ]
@@ -2411,12 +2472,42 @@ dependencies = [
 ]
 
 [[package]]
+name = "proc-macro-hack"
+version = "0.5.20+deprecated"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dc375e1527247fe1a97d8b7156678dfe7c1af2fc075c9a4db3690ecd2a148068"
+
+[[package]]
 name = "proc-macro2"
 version = "1.0.78"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e2422ad645d89c99f8f3e6b88a9fdeca7fabeac836b1002371c4367c8f984aae"
 dependencies = [
  "unicode-ident",
+]
+
+[[package]]
+name = "proc-quote"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5e84ab161de78c915302ca325a19bee6df272800e2ae1a43fe3ef430bab2a100"
+dependencies = [
+ "proc-macro-hack",
+ "proc-macro2",
+ "proc-quote-impl",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "proc-quote-impl"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7fb3ec628b063cdbcf316e06a8b8c1a541d28fa6c0a8eacd2bfb2b7f49e88aa0"
+dependencies = [
+ "proc-macro-hack",
+ "proc-macro2",
+ "quote",
 ]
 
 [[package]]
