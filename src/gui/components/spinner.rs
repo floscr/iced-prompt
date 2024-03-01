@@ -1,14 +1,13 @@
 use anim::{easing, Options, Timeline};
-use iced::advanced::layout::{self, Layout, Node};
-use iced::advanced::widget::{self, Tree, Widget};
-use iced::advanced::{renderer, Clipboard, Shell};
-use iced::{event, mouse, time, Event, Point, Subscription};
+use iced::advanced::layout::{self, Layout};
+use iced::advanced::renderer;
+use iced::advanced::widget::{self, Widget};
+use iced::{mouse, Subscription};
 use iced::{Color, Element, Length, Rectangle, Size};
 use std::time::{Duration, Instant};
 
 pub struct Circle {
     radius: f32,
-    start_time: Instant,
     timeline: Timeline<f32>,
 }
 
@@ -25,16 +24,12 @@ impl Circle {
             .into();
         timeline.begin();
 
-        Self {
-            timeline,
-            radius,
-            start_time: Instant::now(),
-        }
+        Self { timeline, radius }
     }
 
     pub fn update(&mut self, message: Message) -> Subscription<Message> {
         match message {
-            Message::Tick(now) => {
+            Message::Tick(_) => {
                 self.timeline.update();
                 Subscription::none()
             }
@@ -60,22 +55,6 @@ where
 
     fn layout(&self, _renderer: &Renderer, _limits: &layout::Limits) -> layout::Node {
         layout::Node::new(Size::new(self.radius * 2.0, self.radius * 2.0))
-    }
-
-    fn on_event(
-        &mut self,
-        tree: &mut Tree,
-        event: Event,
-        layout: Layout<'_>,
-        cursor: mouse::Cursor,
-        renderer: &Renderer,
-        clipboard: &mut dyn Clipboard,
-        shell: &mut Shell<'_, Message>,
-        _viewport: &Rectangle,
-    ) -> event::Status {
-        match event {
-            _ => event::Status::Ignored,
-        }
     }
 
     fn draw(
@@ -110,47 +89,3 @@ where
         Self::new(circle)
     }
 }
-
-// use iced::time;
-
-// #[derive(Default)]
-// pub struct Loading {
-//     start_time: Instant,
-//     is_visible: bool,
-// }
-
-// #[derive(Debug, Clone, Copy)]
-// pub enum Message {
-//     Tick(Instant),
-// }
-
-// impl iced::widget::Component for Loading {
-//     type Message = Message;
-//     type Executor = iced::executor::Default;
-
-//     fn update(&mut self, message: Self::Message) -> Command<Message> {
-//         match message {
-//             Message::Tick(now) => {
-//                 if now.duration_since(self.start_time) >= Duration::from_secs(1) {
-//                     self.is_visible = true;
-//                 }
-
-//                 Command::none()
-//             }
-//         }
-//     }
-
-//     fn view(&self) -> Element<Message> {
-//         if self.is_visible {
-//             Text::new("Loading").into()
-//         } else {
-//             Element::empty()
-//         }
-//     }
-
-//     fn subscription(&self) -> Subscription<Message> {
-//         let timer = time::every(Duration::from_secs(1)).map(Message::Tick);
-
-//         Subscription::from_recipe(timer)
-//     }
-// }
