@@ -93,6 +93,7 @@ struct State {
     selection: Selection,
     scrollable_offset: AbsoluteOffset,
     result: Arc<Mutex<Option<Command>>>,
+    jobs: HashMap<Uuid, ()>,
 }
 
 #[derive(Debug)]
@@ -188,6 +189,7 @@ impl Application for LoadingState {
                 Message::PushHistory(command) => {
                     let history = &state.history;
                     let next_history = history.clone().push(command);
+                    state.jobs.clear();
                     state.navigate(next_history)
                 }
                 Message::InputChanged(value) => {
@@ -286,6 +288,7 @@ impl Application for LoadingState {
                         // Next: Try to push result on the history stack
                         crate::core::commands::ActionKind::Next => {
                             let command_for_async = command.clone();
+                            state.jobs.insert(id, ());
 
                             iced::Command::perform(
                                 async { command_for_async.execute() },
