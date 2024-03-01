@@ -384,7 +384,7 @@ impl Command {
         }
     }
 
-    pub fn execute(&self) -> Result<String, CommandResultError> {
+    pub fn execute(self) -> Result<String, CommandResultError> {
         match &self.kind {
             CommandKind::Initial => Ok(self.value.clone()),
             CommandKind::Shell(shell_command) => CommandKind::sync_execute(shell_command.clone()),
