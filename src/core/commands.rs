@@ -390,32 +390,6 @@ impl Command {
             CommandKind::Shell(shell_command) => CommandKind::sync_execute(shell_command.clone()),
         }
     }
-
-    pub fn execute_action(&self) -> Option<Command> {
-        let result = self.execute();
-
-        match &self.action {
-            ActionKind::Print | ActionKind::Exit => {
-                match result {
-                    Ok(output) => {
-                        println!("{:#?}", output);
-                        std::process::exit(0)
-                    }
-                    Err(err) => {
-                        println!("{:#?}", err);
-                        std::process::exit(1);
-                    }
-                };
-            }
-            ActionKind::Next => {
-                if let Ok(json_str) = result {
-                    parse_command_or_exit(&json_str)
-                } else {
-                    std::process::exit(1);
-                }
-            }
-        }
-    }
 }
 
 #[cfg(test)]
