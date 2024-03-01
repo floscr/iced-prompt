@@ -251,46 +251,48 @@ impl Application for LoadingState {
                     let history = &state.history;
                     let filter = &state.filter;
 
-                    match history.head() {
-                        Some(cmds) => {
-                            let id = if let Some(maybe_id) = maybe_id {
-                                maybe_id
+                    let opt_cmds = history.head();
+
+                    if opt_cmds.is_none() {
+                        return iced::Command::none();
+                    }
+                    let cmds = opt_cmds.unwrap();
+
+                    let id = if let Some(maybe_id) = maybe_id {
+                        maybe_id
+                    } else {
+                        match &state.selection {
+                            Selection::Initial => {
+                                let order = filter.clone().unwrap_or(cmds.items.order);
+                                order[0]
+                            }
+                            Selection::Selected(selected_id) => *selected_id,
+                        }
+                    };
+
+                    let opt_command = cmds.items.items.get(&id);
+                    if opt_command.is_none() {
+                        return iced::Command::none();
+                    }
+                    let command = opt_command.unwrap();
+
+                    match command.action {
+                        // Next: Try to push result on the history stack
+                        crate::core::commands::ActionKind::Next => {
+                            if let Some(result) = Command::execute_action(command) {
+                                let next_history = history.clone().push(result);
+                                state.navigate(next_history)
                             } else {
-                                match &state.selection {
-                                    Selection::Initial => {
-                                        let order = filter.clone().unwrap_or(cmds.items.order);
-                                        order[0]
-                                    }
-                                    Selection::Selected(selected_id) => *selected_id,
-                                }
-                            };
-
-                            let command = cmds.items.items.get(&id);
-
-                            if let Some(cmd) = command {
-                                match cmd.action {
-                                    crate::core::commands::ActionKind::Next => {
-                                        if let Some(result) = Command::execute_action(cmd) {
-                                            let next_history = history.clone().push(result);
-                                            state.navigate(next_history)
-                                        } else {
-                                            todo!(
-                                                "Error handling for failed Action: Next with error"
-                                            )
-                                        }
-                                    }
-                                    _ => {
-                                        let mut result = state.result.lock().unwrap();
-                                        *result = command.cloned();
-
-                                        window::close()
-                                    }
-                                }
-                            } else {
-                                iced::Command::none()
+                                todo!("Error handling for failed Action: Next with error")
                             }
                         }
-                        _ => iced::Command::none(),
+                        // Close window & save command so it can be further processed
+                        _ => {
+                            let mut result = state.result.lock().unwrap();
+                            *result = Some(command.clone());
+
+                            window::close()
+                        }
                     }
                 }
                 Message::Exit(exit_code) => std::process::exit(exit_code),
