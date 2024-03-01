@@ -115,7 +115,7 @@ mod type_tests {
 
 // Deserialization -------------------------------------------------------------
 
-fn parse_command_or_exit(json_str: &str) -> Option<Command> {
+pub fn parse_command_or_exit(json_str: &str) -> Option<Command> {
     match serde_json::from_str(json_str) {
         Ok(cmd) => Some(cmd),
         Err(err) => {

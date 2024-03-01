@@ -10,6 +10,7 @@ use iced::widget::scrollable::{AbsoluteOffset, RelativeOffset, Viewport};
 use iced::widget::{
     button, column, container, horizontal_rule, row, scrollable, svg, text, text_input,
 };
+use std::process;
 use std::sync::{Arc, Mutex};
 
 use iced::window::{self, Level};
@@ -20,7 +21,7 @@ use iced::{Length, Settings, Subscription};
 use once_cell::sync::Lazy;
 use uuid::Uuid;
 
-use crate::core::commands::{Command, SIMPLE_CMD_HEIGHT};
+use crate::core::commands::{parse_command_or_exit, Command, CommandKind, SIMPLE_CMD_HEIGHT};
 use crate::core::history::History;
 use fonts::ROBOTO_BYTES;
 use style::DEFAULT_BORDER_RADIUS;
@@ -42,6 +43,19 @@ impl fmt::Display for AppError {
             AppError::NoCommandFound => write!(f, "No command found"),
         }
     }
+}
+
+fn execute(cmd: String) -> Result<String, std::io::Error> {
+    let output = std::process::Command::new("sh")
+        .arg("-c")
+        .arg(&cmd)
+        .output()?;
+
+    let stdout = String::from_utf8_lossy(&output.stdout)
+        .trim_end()
+        .to_owned();
+
+    Ok(stdout)
 }
 
 pub fn main(cmd: Command) -> Result<Command, AppError> {
@@ -110,6 +124,7 @@ enum Message {
     OnScroll(Viewport),
     HistoryBackwards,
     FontLoaded(Result<(), font::Error>),
+    PushHistory(String),
 }
 
 impl State {
@@ -183,6 +198,12 @@ impl Application for LoadingState {
                 Message::HistoryBackwards => {
                     let prev_history = state.history.clone().pop_with_minimum();
                     state.navigate(prev_history)
+                }
+                Message::PushHistory(command) => {
+                    let history = &state.history;
+                    let result = parse_command_or_exit(&command).unwrap();
+                    let next_history = history.clone().push(result);
+                    state.navigate(next_history)
                 }
                 Message::InputChanged(value) => {
                     if value.is_empty() {
@@ -279,11 +300,20 @@ impl Application for LoadingState {
                     match command.action {
                         // Next: Try to push result on the history stack
                         crate::core::commands::ActionKind::Next => {
-                            if let Some(result) = Command::execute_action(command) {
-                                let next_history = history.clone().push(result);
-                                state.navigate(next_history)
-                            } else {
-                                todo!("Error handling for failed Action: Next with error")
+                            match &command.kind {
+                                CommandKind::Initial => {
+                                    // let _ = Ok(command.value.clone());
+                                    iced::Command::none()
+                                }
+                                CommandKind::Shell(shell_command) => {
+                                    println!("HEY");
+
+                                    let cloned = shell_command.command.clone();
+
+                                    iced::Command::perform(async { execute(cloned) }, |result| {
+                                        Message::PushHistory(result.unwrap())
+                                    })
+                                }
                             }
                         }
                         // Close window & save command so it can be further processed
