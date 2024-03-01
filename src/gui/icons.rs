@@ -6,3 +6,6 @@ pub static DIRECTORY: Lazy<svg::Handle> =
 
 pub static FILE: Lazy<svg::Handle> =
     Lazy::new(|| svg::Handle::from_memory(include_bytes!("../../icons/file.svg").to_vec()));
+
+pub static LOADER: Lazy<svg::Handle> =
+    Lazy::new(|| svg::Handle::from_memory(include_bytes!("../../icons/loader.svg").to_vec()));
