@@ -28,7 +28,7 @@ pub enum CommandKind {
     // Error(CommandError),
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug)]
 pub enum CommandResultError {
     // IdNotFound(Uuid),
     FailedWithCode(String, i32),
