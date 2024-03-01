@@ -286,14 +286,12 @@ impl Application for LoadingState {
                         // Next: Try to push result on the history stack
                         crate::core::commands::ActionKind::Next => {
                             let command_for_async = command.clone();
+
                             iced::Command::perform(
                                 async { command_for_async.execute() },
-                                |result| {
+                                |io_output| {
                                     let cmd: Result<Command, CommandResultError> =
-                                        result.and_then(|r| {
-                                            serde_json::from_str(&r)
-                                                .map_err(CommandResultError::JsonParseError)
-                                        });
+                                        io_output.and_then(|s| Command::parse(&s));
                                     match cmd {
                                         Ok(c) => Message::PushHistory(c),
                                         Err(err) => {

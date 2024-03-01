@@ -391,6 +391,10 @@ impl Command {
             CommandKind::Shell(shell_command) => CommandKind::sync_execute(shell_command.clone()),
         }
     }
+
+    pub fn parse(input: &str) -> Result<Command, CommandResultError> {
+        serde_json::from_str(input).map_err(CommandResultError::JsonParseError)
+    }
 }
 
 #[cfg(test)]
