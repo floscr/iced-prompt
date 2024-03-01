@@ -2,9 +2,14 @@ use anim::{easing, Options, Timeline};
 use iced::advanced::layout::{self, Layout};
 use iced::advanced::renderer;
 use iced::advanced::widget::{self, Widget};
+use iced::widget::svg;
 use iced::{mouse, Subscription};
 use iced::{Color, Element, Length, Rectangle, Size};
+use once_cell::sync::Lazy;
 use std::time::{Duration, Instant};
+
+pub static LOADER: Lazy<svg::Handle> =
+    Lazy::new(|| svg::Handle::from_memory(include_bytes!("../../../icons/loader.svg").to_vec()));
 
 pub struct Circle {
     radius: f32,
