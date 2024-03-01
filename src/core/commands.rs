@@ -33,6 +33,7 @@ pub enum CommandResultError {
     // IdNotFound(Uuid),
     FailedWithCode(String, i32),
     ExecutionFailed(String),
+    JsonParseError(serde_json::Error),
 }
 
 #[derive(Debug, Default, Clone, Eq, PartialEq)]

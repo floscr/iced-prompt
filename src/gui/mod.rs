@@ -10,7 +10,6 @@ use iced::widget::scrollable::{AbsoluteOffset, RelativeOffset, Viewport};
 use iced::widget::{
     button, column, container, horizontal_rule, row, scrollable, svg, text, text_input,
 };
-use std::process;
 use std::sync::{Arc, Mutex};
 
 use iced::window::{self, Level};
@@ -21,7 +20,7 @@ use iced::{Length, Settings, Subscription};
 use once_cell::sync::Lazy;
 use uuid::Uuid;
 
-use crate::core::commands::{parse_command_or_exit, Command, CommandKind, SIMPLE_CMD_HEIGHT};
+use crate::core::commands::{Command, CommandResultError, SIMPLE_CMD_HEIGHT};
 use crate::core::history::History;
 use fonts::ROBOTO_BYTES;
 use style::DEFAULT_BORDER_RADIUS;
@@ -34,8 +33,6 @@ static INPUT_ID: Lazy<text_input::Id> = Lazy::new(text_input::Id::unique);
 pub enum AppError {
     Iced(iced::Error),
     NoCommandFound,
-    IOError(std::io::Error),
-    ShellResultParseError(serde_json::Error),
 }
 
 impl fmt::Display for AppError {
@@ -43,34 +40,6 @@ impl fmt::Display for AppError {
         match self {
             AppError::Iced(err) => write!(f, "Iced error: {}", err),
             AppError::NoCommandFound => write!(f, "No command found"),
-            AppError::IOError(err) => write!(f, "IOError: {}", err),
-            AppError::ShellResultParseError(err) => write!(f, "ShellResultParseError: {}", err),
-        }
-    }
-}
-
-fn execute(cmd: String) -> Result<String, AppError> {
-    let output = std::process::Command::new("sh")
-        .arg("-c")
-        .arg(&cmd)
-        .output()
-        .map_err(AppError::IOError)?;
-
-    match output.status.success() {
-        true => {
-            let stdout = String::from_utf8_lossy(&output.stdout)
-                .trim_end()
-                .to_owned();
-            Ok(stdout)
-        }
-        false => {
-            let stderr = String::from_utf8_lossy(&output.stderr)
-                .trim_end()
-                .to_owned();
-            Err(AppError::IOError(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                stderr,
-            )))
         }
     }
 }
@@ -316,28 +285,24 @@ impl Application for LoadingState {
                     match command.action {
                         // Next: Try to push result on the history stack
                         crate::core::commands::ActionKind::Next => {
-                            match &command.kind {
-                                CommandKind::Initial => {
-                                    // let _ = Ok(command.value.clone());
-                                    iced::Command::none()
-                                }
-                                CommandKind::Shell(shell_command) => {
-                                    let cloned = shell_command.command.clone();
-                                    iced::Command::perform(async { execute(cloned) }, |result| {
-                                        let cmd: Result<Command, AppError> = result.and_then(|r| {
+                            let command_for_async = command.clone();
+                            iced::Command::perform(
+                                async { command_for_async.execute() },
+                                |result| {
+                                    let cmd: Result<Command, CommandResultError> =
+                                        result.and_then(|r| {
                                             serde_json::from_str(&r)
-                                                .map_err(AppError::ShellResultParseError)
+                                                .map_err(CommandResultError::JsonParseError)
                                         });
-                                        match cmd {
-                                            Ok(c) => Message::PushHistory(c),
-                                            Err(err) => {
-                                                println!("{:#?}", err);
-                                                std::process::exit(1);
-                                            }
+                                    match cmd {
+                                        Ok(c) => Message::PushHistory(c),
+                                        Err(err) => {
+                                            println!("{:#?}", err);
+                                            std::process::exit(1);
                                         }
-                                    })
-                                }
-                            }
+                                    }
+                                },
+                            )
                         }
                         // Close window & save command so it can be further processed
                         _ => {
