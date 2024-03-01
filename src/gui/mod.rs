@@ -1,4 +1,5 @@
 pub mod colors;
+pub mod components;
 pub mod fonts;
 pub mod icons;
 pub mod style;
@@ -363,7 +364,7 @@ impl Application for LoadingState {
                 let is_processing = state
                     .jobs
                     .get(id)
-                    .map_or(None, |_| Some(Text::new("LOADING")));
+                    .map_or(None, |_| Some(components::spinner::circle(3.)));
 
                 let mut row = Row::new();
                 if let Some(icon_el) = icon_element {
