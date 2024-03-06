@@ -1,8 +1,10 @@
 use anim::{easing, Options, Timeline};
+use iced::advanced::graphics::core::event::Status;
 use iced::advanced::layout::{self, Layout};
-use iced::advanced::renderer;
 use iced::advanced::widget::{self, Widget};
+use iced::advanced::{self, renderer};
 use iced::widget::svg;
+use iced::window::RedrawRequest;
 use iced::{mouse, BorderRadius, Subscription};
 use iced::{Color, Element, Length, Rectangle, Size};
 use once_cell::sync::Lazy;
@@ -18,14 +20,15 @@ pub struct Circle {
 
 #[derive(Debug, Clone, Copy)]
 pub enum Message {
-    Tick(Instant),
+    Tick,
 }
 
 impl Circle {
     pub fn new(radius: f32) -> Self {
-        let mut timeline: Timeline<_> = Options::new(0.0, 3.0)
-            .duration(Duration::from_secs(2))
-            .easing(easing::sine_ease())
+        let mut timeline: Timeline<_> = Options::new(0.0, 45.0)
+            .duration(Duration::from_millis(450))
+            .easing(easing::linear())
+            .cycle()
             .into();
         timeline.begin();
 
@@ -34,10 +37,20 @@ impl Circle {
 
     pub fn update(&mut self, message: Message) -> Subscription<Message> {
         match message {
-            Message::Tick(_) => {
+            Message::Tick => {
                 self.timeline.update();
                 Subscription::none()
             }
+        }
+    }
+
+    fn subscription(&self) -> Subscription<Message> {
+        let status = self.timeline.status();
+        if status.is_animating() {
+            const FPS: f32 = 60.0;
+            iced::time::every(Duration::from_secs_f32(1.0 / FPS)).map(|_tick| Message::Tick)
+        } else {
+            iced::Subscription::none()
         }
     }
 }
@@ -60,6 +73,21 @@ where
 
     fn layout(&self, _renderer: &Renderer, _limits: &layout::Limits) -> layout::Node {
         layout::Node::new(Size::new(self.radius * 2.0, self.radius * 2.0))
+    }
+
+    fn on_event(
+        &mut self,
+        _state: &mut widget::Tree,
+        _event: iced::Event,
+        _layout: advanced::Layout<'_>,
+        _cursor: advanced::mouse::Cursor,
+        _renderer: &Renderer,
+        _clipboard: &mut dyn advanced::Clipboard,
+        shell: &mut advanced::Shell<'_, Message>,
+        _viewport: &iced::Rectangle,
+    ) -> Status {
+        shell.request_redraw(RedrawRequest::NextFrame);
+        Status::Ignored
     }
 
     fn draw(
@@ -89,6 +117,7 @@ where
         let angles = vec![0., 45., 90., 135., 180., 225., 270., 315.];
         let radians = angles
             .iter()
+            .map(|x| x + size)
             .map(|angle| angle * std::f32::consts::PI / 180.);
 
         let coordinates = radians
