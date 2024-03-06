@@ -364,7 +364,7 @@ impl Application for LoadingState {
                 let is_processing = state
                     .jobs
                     .get(id)
-                    .map_or(None, |_| Some(components::spinner::circle(3.)));
+                    .map_or(None, |_| Some(components::spinner::circle(7.5)));
 
                 let mut row = Row::new();
                 if let Some(icon_el) = icon_element {

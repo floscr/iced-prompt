@@ -43,16 +43,6 @@ impl Circle {
             }
         }
     }
-
-    fn subscription(&self) -> Subscription<Message> {
-        let status = self.timeline.status();
-        if status.is_animating() {
-            const FPS: f32 = 60.0;
-            iced::time::every(Duration::from_secs_f32(1.0 / FPS)).map(|_tick| Message::Tick)
-        } else {
-            iced::Subscription::none()
-        }
-    }
 }
 
 pub fn circle(radius: f32) -> Circle {
