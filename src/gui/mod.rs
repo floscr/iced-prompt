@@ -10,7 +10,6 @@ use iced::theme::Theme;
 use iced::widget::scrollable::{AbsoluteOffset, RelativeOffset, Viewport};
 use iced::widget::{
     button, column, container, horizontal_rule, row, scrollable, svg, text, text_input, Row, Space,
-    Text,
 };
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
