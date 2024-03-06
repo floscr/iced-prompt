@@ -73,6 +73,77 @@ where
         _viewport: &Rectangle,
     ) {
         let size = self.timeline.value();
+        let bounds = layout.bounds();
+
+        let circle_size = 3.;
+
+        let center_x = bounds.x + bounds.width / 2. - circle_size / 2.;
+        let center_y = bounds.y + bounds.height / 2. - circle_size / 2.;
+
+        let button_1 = Rectangle {
+            width: circle_size,
+            height: circle_size,
+            x: center_x,
+            y: bounds.y,
+        };
+
+        let button_2 = Rectangle {
+            width: circle_size,
+            height: circle_size,
+            x: bounds.x + bounds.width - circle_size,
+            y: center_y,
+        };
+
+        let button_3 = Rectangle {
+            width: circle_size,
+            height: circle_size,
+            x: center_x,
+            y: bounds.y + bounds.height - circle_size,
+        };
+
+        let button_4 = Rectangle {
+            width: circle_size,
+            height: circle_size,
+            x: bounds.x + bounds.width - circle_size,
+            y: bounds.y + bounds.height - circle_size,
+        };
+
+        let white = iced::Color {
+            r: 255.,
+            g: 255.,
+            b: 255.,
+            a: 0.3,
+        };
+
+        renderer.fill_quad(
+            renderer::Quad {
+                bounds: button_1,
+                border_radius: BorderRadius::from(50.),
+                border_width: 0.0,
+                border_color: Color::TRANSPARENT,
+            },
+            white,
+        );
+
+        renderer.fill_quad(
+            renderer::Quad {
+                bounds: button_2,
+                border_radius: BorderRadius::from(50.),
+                border_width: 0.0,
+                border_color: Color::TRANSPARENT,
+            },
+            white,
+        );
+
+        renderer.fill_quad(
+            renderer::Quad {
+                bounds: button_3,
+                border_radius: BorderRadius::from(50.),
+                border_width: 0.0,
+                border_color: Color::TRANSPARENT,
+            },
+            white,
+        );
 
         renderer.fill_quad(
             renderer::Quad {
