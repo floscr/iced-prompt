@@ -361,6 +361,7 @@ impl Application for LoadingState {
                 }
                 .map(|svg_icon| svg(svg_icon).width(20.).height(20.).style(get_svg_style()));
 
+                #[allow(clippy::option_map_or_none)]
                 let is_processing = state
                     .jobs
                     .get(id)
