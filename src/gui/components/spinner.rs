@@ -99,20 +99,21 @@ where
                 )
             })
             .collect::<Vec<_>>();
-        renderer.fill_quad(
-            renderer::Quad {
-                bounds,
-                border_radius: BorderRadius::from(0.),
-                border_width: 0.0,
-                border_color: Color::TRANSPARENT,
-            },
-            iced::Color {
-                r: 255.,
-                g: 0.,
-                b: 0.,
-                a: 1.,
-            },
-        );
+
+        // renderer.fill_quad(
+        //     renderer::Quad {
+        //         bounds,
+        //         border_radius: BorderRadius::from(0.),
+        //         border_width: 0.0,
+        //         border_color: Color::TRANSPARENT,
+        //     },
+        //     iced::Color {
+        //         r: 255.,
+        //         g: 0.,
+        //         b: 0.,
+        //         a: 1.,
+        //     },
+        // );
 
         // create and render 8 quads at the calculated points
         for (x, y) in coordinates {
