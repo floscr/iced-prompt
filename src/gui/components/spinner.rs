@@ -116,7 +116,7 @@ where
         let center_y = bounds.y + bounds.height / 2. - circle_size / 2.;
 
         // calculate coordinates for eight points around a circle
-        let angles = vec![0., 45., 90., 135., 180., 225., 270., 315.];
+        let angles = [0., 45., 90., 135., 180., 225., 270., 315.];
         let radians = angles
             .iter()
             .map(|x| x + size)
@@ -151,8 +151,8 @@ where
             let rectangle = Rectangle {
                 width: circle_size,
                 height: circle_size,
-                x: x,
-                y: y,
+                x,
+                y,
             };
 
             renderer.fill_quad(
