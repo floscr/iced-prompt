@@ -379,7 +379,7 @@ impl Application for LoadingState {
                         .push(loading_text);
                 }
 
-                let button_content = row;
+                let button_content = row.align_items(Alignment::Center);
 
                 button(
                     container(button_content)
