@@ -4,8 +4,8 @@ use iced::advanced::layout::{self, Layout};
 use iced::advanced::widget::{self, Widget};
 use iced::advanced::{self, renderer};
 use iced::widget::svg;
-use iced::window::RedrawRequest;
-use iced::{mouse, BorderRadius, Subscription};
+use iced::window::{self, RedrawRequest};
+use iced::{mouse, BorderRadius, Event, Subscription};
 use iced::{Color, Element, Length, Rectangle, Size};
 use once_cell::sync::Lazy;
 use std::time::{Duration, Instant};
@@ -78,7 +78,7 @@ where
     fn on_event(
         &mut self,
         _state: &mut widget::Tree,
-        _event: iced::Event,
+        event: iced::Event,
         _layout: advanced::Layout<'_>,
         _cursor: advanced::mouse::Cursor,
         _renderer: &Renderer,
@@ -86,7 +86,10 @@ where
         shell: &mut advanced::Shell<'_, Message>,
         _viewport: &iced::Rectangle,
     ) -> Status {
-        shell.request_redraw(RedrawRequest::NextFrame);
+        if let Event::Window(window::Event::RedrawRequested(_now)) = event {
+            shell.request_redraw(RedrawRequest::NextFrame);
+        }
+
         Status::Ignored
     }
 
