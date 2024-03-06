@@ -14,6 +14,7 @@ use iced::widget::{
 };
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
+use std::time::Instant;
 
 use iced::window::{self, Level};
 use iced::{font, subscription, Alignment, Event, Padding};
@@ -96,7 +97,7 @@ struct State {
     selection: Selection,
     scrollable_offset: AbsoluteOffset,
     result: Arc<Mutex<Option<Command>>>,
-    jobs: HashMap<Uuid, ()>,
+    jobs: HashMap<Uuid, Instant>,
 }
 
 #[derive(Debug)]
@@ -291,7 +292,7 @@ impl Application for LoadingState {
                         // Next: Try to push result on the history stack
                         crate::core::commands::ActionKind::Next => {
                             let command_for_async = command.clone();
-                            state.jobs.insert(id, ());
+                            state.jobs.insert(id, Instant::now());
 
                             iced::Command::perform(
                                 async { command_for_async.execute() },
@@ -364,7 +365,7 @@ impl Application for LoadingState {
                 let is_processing = state
                     .jobs
                     .get(id)
-                    .map_or(None, |_| Some(components::spinner::circle(7.5)));
+                    .map_or(None, |t| Some(components::spinner::circle(7.5, *t)));
 
                 let mut row = Row::new();
                 if let Some(icon_el) = icon_element {

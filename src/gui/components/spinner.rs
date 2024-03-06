@@ -16,6 +16,7 @@ pub static LOADER: Lazy<svg::Handle> =
 pub struct Circle {
     radius: f32,
     timeline: Timeline<f32>,
+    start_time: Instant,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -24,7 +25,7 @@ pub enum Message {
 }
 
 impl Circle {
-    pub fn new(radius: f32) -> Self {
+    pub fn new(radius: f32, start_time: Instant) -> Self {
         let mut timeline: Timeline<_> = Options::new(0.0, 45.0)
             .duration(Duration::from_millis(450))
             .easing(easing::linear())
@@ -32,7 +33,11 @@ impl Circle {
             .into();
         timeline.begin();
 
-        Self { timeline, radius }
+        Self {
+            timeline,
+            radius,
+            start_time,
+        }
     }
 
     pub fn update(&mut self, message: Message) -> Subscription<Message> {
@@ -45,8 +50,8 @@ impl Circle {
     }
 }
 
-pub fn circle(radius: f32) -> Circle {
-    Circle::new(radius)
+pub fn circle(radius: f32, start_time: Instant) -> Circle {
+    Circle::new(radius, start_time)
 }
 
 impl<Message, Renderer> Widget<Message, Renderer> for Circle
@@ -93,6 +98,10 @@ where
         _cursor: mouse::Cursor,
         _viewport: &Rectangle,
     ) {
+        if (Instant::now() - self.start_time) < Duration::from_millis(500) {
+            return;
+        }
+
         let size = self.timeline.value();
         let bounds = layout.bounds();
         let circle_size = 3.;
