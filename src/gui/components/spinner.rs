@@ -3,7 +3,7 @@ use iced::advanced::layout::{self, Layout};
 use iced::advanced::renderer;
 use iced::advanced::widget::{self, Widget};
 use iced::widget::svg;
-use iced::{mouse, Subscription};
+use iced::{mouse, BorderRadius, Subscription};
 use iced::{Color, Element, Length, Rectangle, Size};
 use once_cell::sync::Lazy;
 use std::time::{Duration, Instant};
@@ -74,40 +74,7 @@ where
     ) {
         let size = self.timeline.value();
         let bounds = layout.bounds();
-
         let circle_size = 3.;
-
-        let center_x = bounds.x + bounds.width / 2. - circle_size / 2.;
-        let center_y = bounds.y + bounds.height / 2. - circle_size / 2.;
-
-        let button_1 = Rectangle {
-            width: circle_size,
-            height: circle_size,
-            x: center_x,
-            y: bounds.y,
-        };
-
-        let button_2 = Rectangle {
-            width: circle_size,
-            height: circle_size,
-            x: bounds.x + bounds.width - circle_size,
-            y: center_y,
-        };
-
-        let button_3 = Rectangle {
-            width: circle_size,
-            height: circle_size,
-            x: center_x,
-            y: bounds.y + bounds.height - circle_size,
-        };
-
-        let button_4 = Rectangle {
-            width: circle_size,
-            height: circle_size,
-            x: bounds.x + bounds.width - circle_size,
-            y: bounds.y + bounds.height - circle_size,
-        };
-
         let white = iced::Color {
             r: 255.,
             g: 255.,
@@ -115,45 +82,57 @@ where
             a: 0.3,
         };
 
+        let center_x = bounds.x + bounds.width / 2. - circle_size / 2.;
+        let center_y = bounds.y + bounds.height / 2. - circle_size / 2.;
+
+        // calculate coordinates for eight points around a circle
+        let angles = vec![0., 45., 90., 135., 180., 225., 270., 315.];
+        let radians = angles
+            .iter()
+            .map(|angle| angle * std::f32::consts::PI / 180.);
+
+        let coordinates = radians
+            .map(|radians| {
+                (
+                    center_x + bounds.width / 2. * radians.cos(),
+                    center_y + bounds.width / 2. * radians.sin(),
+                )
+            })
+            .collect::<Vec<_>>();
         renderer.fill_quad(
             renderer::Quad {
-                bounds: button_1,
-                border_radius: BorderRadius::from(50.),
+                bounds,
+                border_radius: BorderRadius::from(0.),
                 border_width: 0.0,
                 border_color: Color::TRANSPARENT,
             },
-            white,
+            iced::Color {
+                r: 255.,
+                g: 0.,
+                b: 0.,
+                a: 1.,
+            },
         );
 
-        renderer.fill_quad(
-            renderer::Quad {
-                bounds: button_2,
-                border_radius: BorderRadius::from(50.),
-                border_width: 0.0,
-                border_color: Color::TRANSPARENT,
-            },
-            white,
-        );
+        // create and render 8 quads at the calculated points
+        for (x, y) in coordinates {
+            let rectangle = Rectangle {
+                width: circle_size,
+                height: circle_size,
+                x: x,
+                y: y,
+            };
 
-        renderer.fill_quad(
-            renderer::Quad {
-                bounds: button_3,
-                border_radius: BorderRadius::from(50.),
-                border_width: 0.0,
-                border_color: Color::TRANSPARENT,
-            },
-            white,
-        );
-
-        renderer.fill_quad(
-            renderer::Quad {
-                bounds: layout.bounds(),
-                border_radius: size.into(),
-                border_width: 0.0,
-                border_color: Color::TRANSPARENT,
-            },
-            Color::BLACK,
-        );
+            renderer.fill_quad(
+                renderer::Quad {
+                    bounds: rectangle,
+                    border_radius: BorderRadius::from(50.),
+                    border_width: 0.0,
+                    border_color: Color::TRANSPARENT,
+                },
+                white,
+            );
+        }
     }
 }
 
