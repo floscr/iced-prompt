@@ -377,8 +377,7 @@ impl Application for LoadingState {
                 if let Some(loading_text) = is_processing {
                     row = row
                         .push(Space::new(Length::Fill, Length::Shrink))
-                        .push(loading_text)
-                        .push(Space::new(4.5, Length::Shrink));
+                        .push(container(loading_text).padding(iced::Padding::from([0, 4])))
                 }
 
                 let button_content = row.align_items(Alignment::Center);
