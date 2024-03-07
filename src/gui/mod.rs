@@ -118,6 +118,12 @@ enum Message {
 }
 
 impl State {
+    fn push_history(&mut self, command: Command) -> iced::Command<Message> {
+        let history = &self.history;
+        let next_history = history.clone().push(command);
+        self.jobs.clear();
+        self.navigate(next_history)
+    }
     fn navigate(&mut self, history: History) -> iced::Command<Message> {
         self.filter = None;
         self.selection = Selection::Initial;
@@ -189,12 +195,7 @@ impl Application for LoadingState {
                     let prev_history = state.history.clone().pop_with_minimum();
                     state.navigate(prev_history)
                 }
-                Message::PushHistory(command) => {
-                    let history = &state.history;
-                    let next_history = history.clone().push(command);
-                    state.jobs.clear();
-                    state.navigate(next_history)
-                }
+                Message::PushHistory(command) => state.push_history(command),
                 Message::InputChanged(value) => {
                     if value.is_empty() {
                         state.filter = None;
