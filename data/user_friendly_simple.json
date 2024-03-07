@@ -2,8 +2,9 @@
   "value": "Commands",
   "items": [
     {
-      "value": "List files: ~",
-      "shell": "bb ./scripts/src/file_explorer.clj ~",
+      "decription": "List files: ~",
+      "value": "~",
+      "shell": "bb ./scripts/src/file_explorer.clj $__COMMAND_VALUE",
       "action": "next"
     },
     {

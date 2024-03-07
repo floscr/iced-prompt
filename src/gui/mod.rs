@@ -340,7 +340,7 @@ impl Application for LoadingState {
             .enumerate()
             .map(|(idx, id)| {
                 let cmd = current_cmds.items.items.get(id).unwrap();
-                let value = &cmd.value;
+                let title = cmd.title.as_deref().unwrap_or(&cmd.value);
                 let icon = &cmd.icon;
 
                 let button_style = match (selection, idx) {
@@ -349,7 +349,7 @@ impl Application for LoadingState {
                     _ => Button::Primary,
                 };
 
-                let text_value = text(value).line_height(1.25);
+                let text_value = text(title).line_height(1.25);
 
                 let icon_element = match icon {
                     Some(icon_string) => match icon_string.as_str() {

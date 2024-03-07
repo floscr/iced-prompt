@@ -60,6 +60,8 @@ pub enum ActionKind {
 
 #[derive(Deserialize, Default, Debug, Clone, Eq, PartialEq)]
 pub struct Command {
+    #[serde(default)]
+    pub title: Option<String>,
     pub value: String,
     #[serde(default, alias = "shell", deserialize_with = "deserialize_kind")]
     pub kind: CommandKind,

@@ -12,13 +12,15 @@
         {:keys [dirs files]}
         (reduce (fn [acc cur]
                   (let [dir? (fs/directory? cur)
-                        value (fs/file-name cur)
+                        title (fs/file-name cur)
                         item (if dir?
-                               {:value value
-                                :shell (str "bb ./scripts/src/file_explorer.clj " cur)
+                               {:title (str title)
+                                :value (str cur)
+                                :shell "bb ./scripts/src/file_explorer.clj $__COMMAND_VALUE"
                                 :icon "Directory"
                                 :action "Next"}
-                               {:value value
+                               {:title (str title)
+                                :value (str cur)
                                 :icon "File"
                                 :action "Exit"})
                         key (if dir? :dirs :files)]
