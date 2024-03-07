@@ -501,12 +501,16 @@ mod command_tests {
         let error = result.unwrap_err();
         let expected_error = CommandResultError::FailedWithCode(String::from("Fail\n"), 1);
 
-        let is_expected_error = match error {
+        let is_expected_error = match &error {
             CommandResultError::FailedWithCode(msg, code) => {
-                msg == String::from("Fail\n") && code == 1
+                msg.clone() == String::from("Fail\n") && code.clone() == 1
             }
             _ => false,
         };
-        assert_eq!(is_expected_error, true)
+        assert_eq!(
+            is_expected_error, true,
+            "Testing equality of errors {:#?} and {:#?}",
+            error, expected_error
+        )
     }
 }
