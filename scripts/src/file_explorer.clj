@@ -47,6 +47,7 @@
 ;; Main ------------------------------------------------------------------------
 
 (defn -main [& args]
+  ;; (Thread/sleep 5000)
   (match (vec args)
          [path] (list-dir-cmd path)
          :else (System/exit 1)))
