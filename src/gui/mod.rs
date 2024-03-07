@@ -23,7 +23,7 @@ use iced::{Length, Settings, Subscription};
 use once_cell::sync::Lazy;
 use uuid::Uuid;
 
-use crate::core::commands::{Command, CommandResultError, SIMPLE_CMD_HEIGHT};
+use crate::core::commands::{ActionKind, Command, CommandResultError, SIMPLE_CMD_HEIGHT};
 use crate::core::history::History;
 use fonts::ROBOTO_BYTES;
 use style::DEFAULT_BORDER_RADIUS;
@@ -289,7 +289,7 @@ impl Application for LoadingState {
                         Some((id, command)) => {
                             match command.action {
                                 // Next: Try to push result on the history stack
-                                crate::core::commands::ActionKind::Next => {
+                                ActionKind::Next => {
                                     let command_for_async = command.clone();
                                     state.jobs.insert(*id, Instant::now());
 
