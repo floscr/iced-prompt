@@ -242,11 +242,11 @@ mod deserialize_tests {
         assert_eq!(v.value, "Commands");
         assert_eq!(v.items.order.len(), 2);
         let (_, cmd) = v.get_child_command_by_index(0).unwrap();
-        assert_eq!(cmd.value, "List files: ~");
+        assert_eq!(cmd.value, "~");
         assert_eq!(
             cmd.kind,
             CommandKind::Shell(ShellProperties {
-                command: s!("bb ./scripts/src/file_explorer.clj ~")
+                command: s!("bb ./scripts/src/file_explorer.clj $__COMMAND_VALUE")
             })
         );
     }
