@@ -499,6 +499,13 @@ mod command_tests {
 
         let error = result.unwrap_err();
         let expected_error = CommandResultError::FailedWithCode(String::from("Fail\n"), 1);
-        assert_eq!(error, expected_error);
+
+        let is_expected_error = match error {
+            CommandResultError::FailedWithCode(msg, code) => {
+                msg == String::from("Fail\n") && code == 1
+            }
+            _ => false,
+        };
+        assert_eq!(is_expected_error, true)
     }
 }
