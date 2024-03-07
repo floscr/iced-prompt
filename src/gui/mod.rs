@@ -431,7 +431,6 @@ impl Application for LoadingState {
             text_input("Your prompt", input_value)
                 .id(INPUT_ID.clone())
                 .style(TextInput::Default)
-                .on_submit(Message::Submit(None))
                 .on_input(Message::InputChanged)
                 .padding(Padding::from([15., DEFAULT_BORDER_RADIUS + 10.]))
                 .size(15.),
@@ -473,6 +472,9 @@ impl Application for LoadingState {
                 modifiers,
                 key_code,
             }) => match (key_code, modifiers) {
+                (KeyCode::Enter, modifier) => match modifier {
+                    _ => Some(Message::Submit(None)),
+                },
                 (KeyCode::Backspace, Modifiers::SHIFT) => Some(Message::HistoryBackwards),
                 (KeyCode::Tab, Modifiers::SHIFT) => Some(Message::HistoryBackwards),
                 (KeyCode::Escape, _) => Some(Message::Exit(0)),
