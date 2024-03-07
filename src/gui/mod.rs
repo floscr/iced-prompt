@@ -135,6 +135,31 @@ impl State {
             scrollable::snap_to(SCROLLABLE_ID.clone(), RelativeOffset::START),
         ])
     }
+
+    fn selected_command(&mut self, option_id: Option<Uuid>) -> Option<(Uuid, Command)> {
+        let history = &self.history;
+        let filter = &self.filter;
+
+        let opt_cmds = history.head();
+
+        opt_cmds.as_ref()?;
+        let cmds = opt_cmds.unwrap();
+
+        let id = if let Some(id) = option_id {
+            id
+        } else {
+            match &self.selection {
+                Selection::Initial => {
+                    let order = filter.clone().unwrap_or(cmds.items.order);
+                    order[0]
+                }
+                Selection::Selected(selected_id) => *selected_id,
+            }
+        };
+
+        let hash_map = &cmds.items.items;
+        hash_map.get(&id).map(|x| (id, x.clone()))
+    }
 }
 
 struct ApplicationStyle {}
@@ -260,62 +285,39 @@ impl Application for LoadingState {
                     }
                 }
                 Message::Submit(maybe_id) => {
-                    let history = &state.history;
-                    let filter = &state.filter;
+                    match &state.selected_command(maybe_id) {
+                        Some((id, command)) => {
+                            match command.action {
+                                // Next: Try to push result on the history stack
+                                crate::core::commands::ActionKind::Next => {
+                                    let command_for_async = command.clone();
+                                    state.jobs.insert(*id, Instant::now());
 
-                    let opt_cmds = history.head();
+                                    iced::Command::perform(
+                                        async { command_for_async.execute() },
+                                        |io_output| {
+                                            let cmd: Result<Command, CommandResultError> =
+                                                io_output.and_then(|s| Command::parse(&s));
+                                            match cmd {
+                                                Ok(c) => Message::PushHistory(c),
+                                                Err(err) => {
+                                                    println!("{:#?}", err);
+                                                    std::process::exit(1);
+                                                }
+                                            }
+                                        },
+                                    )
+                                }
+                                // Close window & save command so it can be further processed
+                                _ => {
+                                    let mut result = state.result.lock().unwrap();
+                                    *result = Some(command.clone());
 
-                    if opt_cmds.is_none() {
-                        return iced::Command::none();
-                    }
-                    let cmds = opt_cmds.unwrap();
-
-                    let id = if let Some(maybe_id) = maybe_id {
-                        maybe_id
-                    } else {
-                        match &state.selection {
-                            Selection::Initial => {
-                                let order = filter.clone().unwrap_or(cmds.items.order);
-                                order[0]
+                                    window::close()
+                                }
                             }
-                            Selection::Selected(selected_id) => *selected_id,
                         }
-                    };
-
-                    let opt_command = cmds.items.items.get(&id);
-                    if opt_command.is_none() {
-                        return iced::Command::none();
-                    }
-                    let command = opt_command.unwrap();
-
-                    match command.action {
-                        // Next: Try to push result on the history stack
-                        crate::core::commands::ActionKind::Next => {
-                            let command_for_async = command.clone();
-                            state.jobs.insert(id, Instant::now());
-
-                            iced::Command::perform(
-                                async { command_for_async.execute() },
-                                |io_output| {
-                                    let cmd: Result<Command, CommandResultError> =
-                                        io_output.and_then(|s| Command::parse(&s));
-                                    match cmd {
-                                        Ok(c) => Message::PushHistory(c),
-                                        Err(err) => {
-                                            println!("{:#?}", err);
-                                            std::process::exit(1);
-                                        }
-                                    }
-                                },
-                            )
-                        }
-                        // Close window & save command so it can be further processed
-                        _ => {
-                            let mut result = state.result.lock().unwrap();
-                            *result = Some(command.clone());
-
-                            window::close()
-                        }
+                        None => iced::Command::none(),
                     }
                 }
                 Message::Exit(exit_code) => std::process::exit(exit_code),
