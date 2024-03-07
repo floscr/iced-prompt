@@ -268,9 +268,13 @@ mod deserialize_tests {
 // Impl ------------------------------------------------------------------------
 
 impl CommandKind {
-    pub fn sync_execute(shell_command: ShellProperties) -> Result<String, CommandResultError> {
+    pub fn sync_execute(
+        shell_command: ShellProperties,
+        cmd: Command,
+    ) -> Result<String, CommandResultError> {
         let output = process::Command::new("sh")
             .arg("-c")
+            .env("__COMMAND_VALUE", cmd.value)
             .arg(shell_command.command)
             .output();
 
@@ -388,7 +392,9 @@ impl Command {
     pub fn execute(self) -> Result<String, CommandResultError> {
         match &self.kind {
             CommandKind::Initial => Ok(self.value.clone()),
-            CommandKind::Shell(shell_command) => CommandKind::sync_execute(shell_command.clone()),
+            CommandKind::Shell(shell_command) => {
+                CommandKind::sync_execute(shell_command.clone(), self)
+            }
         }
     }
 
@@ -471,9 +477,9 @@ mod command_tests {
     #[test]
     fn execute_successful_command() {
         let command = Command {
-            value: s!("Success"),
+            value: s!("Ok"),
             kind: CommandKind::Shell(ShellProperties {
-                command: s!("echo \"Success\""),
+                command: s!("echo \"Success: $__COMMAND_VALUE\""),
             }),
             ..Command::default()
         };
@@ -482,7 +488,7 @@ mod command_tests {
         assert!(result.is_ok());
 
         let value = result.unwrap();
-        assert_eq!(value, "Success");
+        assert_eq!(value, "Success: Ok");
     }
 
     #[test]
