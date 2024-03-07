@@ -490,7 +490,7 @@ mod command_tests {
         let command = Command {
             value: s!("Fail"),
             kind: CommandKind::Shell(ShellProperties {
-                command: s!("echo \"Fail\"; exit 1"),
+                command: s!(">&2 echo 'Fail'; exit 1"),
             }),
             ..Command::default()
         };
