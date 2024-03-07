@@ -485,6 +485,7 @@ mod command_tests {
         assert_eq!(value, "Success");
     }
 
+    #[test]
     fn execute_failing_command() {
         let command = Command {
             value: s!("Fail"),
